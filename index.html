@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Wilberforce Pendulum Motion Analyzer | 캡처 미사용 학습 탭 · phyphox 전용</title>
+  <title>Wilberforce Pendulum Motion Analyzer | phyphox · PocketLab Voyager 지원</title>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root{
@@ -122,9 +122,9 @@
 </head>
 <body>
   <header>
-    <div class="tag">phyphox 전용 분석 · 캡처 미사용 학습 탭 · 스프링 질량/관성 보정</div>
-    <h1>윌버포스 진자 phyphox 전용 결과 분석·학습 웹앱</h1>
-    <p>스마트폰 가속도계와 자이로스코프 자료를 업로드하면 보정 가속도, 각가속도, 진동 주기, 감쇠, 위상 관계, 에너지 교환, 정상모드 주파수, 맥놀이 주기를 자동 계산합니다. 추가로 스프링 자체의 질량과 관성모멘트를 무시하지 않는 보정 모델을 반영하여, 측정된 정상모드 주파수를 각진동수 ω와 ω²로 환산하고 1/I′ 기준 비교값까지 정리합니다. 이론 구조는 나선형 용수철의 병진-회전 결합, 선형화, 정상모드, 맥놀이 해석을 따르되, 실제 측정·분석 방법은 카메라 트래킹이 아니라 phyphox 센서 데이터 분석으로 통일했습니다. 단일 통합 파일 또는 phyphox의 Accelerometer.csv와 Gyroscope.csv 2개 파일을 동시에 업로드할 수 있습니다. 모든 처리는 브라우저 안에서만 실행됩니다.</p>
+    <div class="tag">phyphox · PocketLab Voyager CSV 지원 · 캡처 미사용 학습 탭 · 스프링 질량/관성 보정</div>
+    <h1>윌버포스 진자 센서 데이터 결과 분석·학습 웹앱</h1>
+    <p>스마트폰 가속도계와 자이로스코프 자료를 업로드하면 보정 가속도, 각가속도, 진동 주기, 감쇠, 위상 관계, 에너지 교환, 정상모드 주파수, 맥놀이 주기를 자동 계산합니다. 추가로 스프링 자체의 질량과 관성모멘트를 무시하지 않는 보정 모델을 반영하여, 측정된 정상모드 주파수를 각진동수 ω와 ω²로 환산하고 1/I′ 기준 비교값까지 정리합니다. 이론 구조는 나선형 용수철의 병진-회전 결합, 선형화, 정상모드, 맥놀이 해석을 따르되, 실제 측정·분석 방법은 카메라 트래킹이 아니라 phyphox 센서 데이터 분석으로 통일했습니다. 단일 통합 파일, phyphox의 Accelerometer.csv와 Gyroscope.csv 2개 파일, PocketLab Voyager CSV를 업로드할 수 있습니다. 모든 처리는 브라우저 안에서만 실행됩니다.</p>
   </header>
 
   <main class="grid">
@@ -132,10 +132,10 @@
       <h2>1. 데이터 업로드</h2>
       <div id="drop" class="drop">
         <strong>파일을 여기에 놓거나 클릭</strong>
-        <span>통합 파일 1개 또는 Accelerometer.csv + Gyroscope.csv 2개를 동시에 업로드</span>
+        <span>통합 파일 1개, Accelerometer.csv + Gyroscope.csv 2개, PocketLab Voyager CSV 지원</span>
       </div>
       <input id="fileInput" type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" multiple />
-      <div id="fileInfo" class="note">아직 파일이 업로드되지 않았습니다. 단일 파일 1개 또는 Accelerometer.csv와 Gyroscope.csv 2개를 함께 선택할 수 있습니다.</div>
+      <div id="fileInfo" class="note">아직 파일이 업로드되지 않았습니다. 단일 파일 1개, Accelerometer.csv와 Gyroscope.csv 2개, PocketLab Voyager CSV를 사용할 수 있습니다.</div>
       <div id="xlsxWarn" class="warn">엑셀 파일을 읽으려면 인터넷 연결이 필요할 수 있습니다. 읽히지 않으면 phyphox에서 CSV로 다시 내보내 주세요.</div>
 
       <h2 style="margin-top:22px">2. 분석 열 선택</h2>
@@ -232,10 +232,10 @@
       </div>
 
       <div class="note">
-        <b>권장 phyphox 설정</b><br>
-        통합 파일은 Acceleration without g 또는 Linear acceleration + Gyroscope를 권장합니다. phyphox가 Accelerometer.csv와 Gyroscope.csv를 따로 저장한 경우 두 파일을 한 번에 선택하면 시간축을 기준으로 자동 결합합니다. 축 방향이 불확실하면 업로드 후 그래프 진폭이 가장 큰 축을 선택하면 됩니다.<br><br>
+        <b>권장 센서 설정</b><br>
+        phyphox는 Acceleration without g 또는 Linear acceleration + Gyroscope를 권장합니다. PocketLab Voyager는 Acceleration과 Angular Velocity를 함께 기록한 CSV를 권장합니다. phyphox가 Accelerometer.csv와 Gyroscope.csv를 따로 저장한 경우 두 파일을 한 번에 선택하면 시간축을 기준으로 자동 결합합니다. PocketLab의 각속도 단위가 deg/s이면 자동으로 rad/s로 변환합니다. 축 방향이 불확실하면 업로드 후 그래프 진폭이 가장 큰 축을 선택하면 됩니다.<br><br>
         <b>이 버전의 분석 원칙</b><br>
-        첨부 영상에 나온 카메라 추적, 거울 반사 추적, 장노출 사진 분석은 사용하지 않습니다. 이론과 결과 해석의 구조만 참고하고, 실제 수치 분석은 스마트폰 가속도계와 자이로스코프 데이터만 사용합니다.
+        첨부 영상에 나온 카메라 추적, 거울 반사 추적, 장노출 사진 분석은 사용하지 않습니다. 이론과 결과 해석의 구조만 참고하고, 실제 수치 분석은 스마트폰 또는 PocketLab Voyager의 가속도계와 자이로스코프 데이터만 사용합니다.
       </div>
 
       <h3>데이터 미리보기</h3>
@@ -271,7 +271,7 @@
 
           
           <div class="learnPanel active" id="learn-design">
-            <div class="learnLead"><b>학습 목표</b> — 유튜브 발표의 핵심 아이디어를 <b>캡처 화면 없이</b> 다시 정리했습니다. 실제 분석은 카메라 추적이 아니라 <b>phyphox의 가속도계와 자이로스코프 자료</b>만 사용합니다.</div>
+            <div class="learnLead"><b>학습 목표</b> — 유튜브 발표의 핵심 아이디어를 <b>캡처 화면 없이</b> 다시 정리했습니다. 실제 분석은 카메라 추적이 아니라 <b>phyphox 또는 PocketLab Voyager의 가속도계와 자이로스코프 자료</b>를 사용합니다.</div>
             <div class="learnGrid">
               <div class="diagramCard">
                 <h3>장치 구조를 새 그림으로 이해하기</h3>
@@ -295,7 +295,7 @@
                   <rect x="350" y="61" width="220" height="48" rx="10" fill="#ffffff" stroke="#cbd5e1"/><text x="460" y="91" text-anchor="middle" font-size="18" fill="#172033">천장 고정</text>
                   <rect x="350" y="150" width="220" height="48" rx="10" fill="#e8f6ef" stroke="#19a77b" stroke-width="3"/><text x="460" y="180" text-anchor="middle" font-size="18" fill="#172033">나선형 용수철</text>
                   <rect x="350" y="240" width="220" height="74" rx="10" fill="#ffffff" stroke="#cbd5e1"/><text x="460" y="269" text-anchor="middle" font-size="17" fill="#172033">관성모멘트 조절 질량부</text><text x="460" y="294" text-anchor="middle" font-size="14" fill="#687386">볼트 위치로 I′ 조절</text>
-                  <rect x="350" y="350" width="220" height="48" rx="10" fill="#eef3ff" stroke="#a9b9ff"/><text x="460" y="380" text-anchor="middle" font-size="16" fill="#172033">phyphox 센서 측정</text>
+                  <rect x="350" y="350" width="220" height="48" rx="10" fill="#eef3ff" stroke="#a9b9ff"/><text x="460" y="380" text-anchor="middle" font-size="16" fill="#172033">센서 데이터 측정</text>
                 </svg>
                 <div class="caption">위아래 운동은 가속도계, 비틀림 운동은 자이로스코프로 측정합니다. 카메라·거울·장노출 사진은 사용하지 않습니다.</div>
               </div>
@@ -333,7 +333,7 @@
                 <h3>권장 실험 절차</h3>
                 <ol>
                   <li>스마트폰을 질량부에 단단히 고정하고 축 방향을 확인합니다.</li>
-                  <li>phyphox에서 가속도계와 자이로스코프를 동시에 기록합니다.</li>
+                  <li>phyphox 또는 PocketLab Voyager에서 가속도계와 자이로스코프를 동시에 기록합니다.</li>
                   <li>자료를 CSV로 저장합니다. 파일이 나뉘면 Accelerometer.csv와 Gyroscope.csv를 함께 업로드합니다.</li>
                   <li>시작·종료 버튼 조작으로 흔들린 구간은 웹앱에서 제외합니다.</li>
                   <li>같은 조건을 3회 이상 반복하고, 볼트 위치 조건을 바꾸어 비교합니다.</li>
@@ -520,7 +520,7 @@
                 <h3>체크리스트</h3>
                 <div class="checklist">
                   <div class="checkItem">탐구 문제와 변인이 명확한가?</div>
-                  <div class="checkItem">Accelerometer.csv와 Gyroscope.csv 분석 방법을 설명했는가?</div>
+                  <div class="checkItem">phyphox 또는 PocketLab CSV 분석 방법을 설명했는가?</div>
                   <div class="checkItem">시작·끝 외란 구간 제외 기준을 적었는가?</div>
                   <div class="checkItem">f₁, f₂, Δf, T<sub>B</sub> 계산을 제시했는가?</div>
                   <div class="checkItem">m′, I′ 보정의 필요성을 설명했는가?</div>
@@ -715,6 +715,7 @@ let data = [];
 let lastResult = null;
 let uploadSourceMode = 'single';
 let uploadedFileNames = [];
+let detectedSourceKind = 'generic';
 let comparisonStore = [];
 const COMPARISON_STORAGE_KEY = 'wilberforce_comparison_store_v2';
 
@@ -756,7 +757,7 @@ function parseText(text){
   for(let i=0;i<Math.min(lines.length,30);i++){
     const d = detectDelimiter(lines[i]);
     const parts = lines[i].split(d).map(s=>s.trim());
-    const textScore = parts.filter(p => /time|시간|acc|accel|gyro|gyr|각속도|x|y|z/i.test(p)).length;
+    const textScore = parts.filter(p => /time|시간|elapsed|acc|accel|acceleration|gyro|gyr|angular|velocity|각속도|pocketlab|voyager|x|y|z/i.test(p)).length;
     const numericScore = parts.filter(p => Number.isFinite(numberLike(p))).length;
     if(parts.length >= 2 && textScore >= 1 && numericScore < parts.length/2){
       headerIndex = i; delim = d; break;
@@ -789,7 +790,7 @@ async function parseFile(file){
     let hIdx = 0;
     for(let i=0;i<Math.min(aoa.length,30);i++){
       const row = aoa[i] || [];
-      const textScore = row.filter(p => /time|시간|acc|accel|gyro|gyr|각속도|x|y|z/i.test(String(p))).length;
+      const textScore = row.filter(p => /time|시간|elapsed|acc|accel|acceleration|gyro|gyr|angular|velocity|각속도|pocketlab|voyager|x|y|z/i.test(String(p))).length;
       const numericScore = row.filter(p => Number.isFinite(numberLike(p))).length;
       if(row.length >= 2 && textScore >= 1 && numericScore < row.length/2){ hIdx = i; break; }
     }
@@ -912,6 +913,38 @@ function wrapPhase(deg){
 }
 
 
+
+function isPocketLabDataset(fileHeaders, fileNames=[]){
+  const joined = (fileNames.join(' ') + ' ' + fileHeaders.join(' ')).toLowerCase();
+  const hasPocketName = /pocketlab|pocket lab|voyager/.test(joined);
+  const hasTime = /time|elapsed|시간/.test(joined);
+  const hasAcc = /acceleration|accelerometer|accel|가속|acc\s*[xyz]/.test(joined);
+  const hasAngular = /angular\s*velocity|gyroscope|gyro|gyr|각속|deg\/s|°\/s|dps|rad\/s/.test(joined);
+  return hasPocketName || (hasTime && hasAcc && hasAngular && /angular\s*velocity|deg\/s|°\/s|dps/.test(joined));
+}
+
+function angularVelocityScaleForHeader(header){
+  const h = String(header || '').toLowerCase();
+  if(/deg\s*\/\s*s|degree|degrees|°\s*\/\s*s|\bdps\b/.test(h)) return Math.PI/180;
+  return 1;
+}
+
+function angularVelocityUnitNote(header){
+  const scale = angularVelocityScaleForHeader(header);
+  return scale === 1 ? '각속도 단위 변환 없음' : 'PocketLab 각속도 deg/s → rad/s 자동 변환';
+}
+
+function sourceKindLabel(kind){
+  if(kind === 'pocketlab') return 'PocketLab Voyager CSV 자동 인식';
+  if(kind === 'split') return 'phyphox 2파일 결합';
+  if(kind === 'single') return '단일 통합 파일';
+  return '일반 CSV';
+}
+
+function pocketLabColumnHint(){
+  return 'PocketLab 권장 열: Time 또는 Elapsed Time, Acceleration X/Y/Z, Angular Velocity X/Y/Z. 각속도가 deg/s이면 웹앱이 rad/s로 자동 변환합니다.';
+}
+
 function findTimeColumnFor(fileHeaders, fileRows){
   const lower = fileHeaders.map(h => String(h).toLowerCase());
   let timeIdx = lower.findIndex(h => /time|시간|^t\b|t\s*\(?s?\)?/.test(h));
@@ -934,10 +967,10 @@ function sensorScore(parsed, type){
   const text = (name + ' ' + parsed.headers.join(' ')).toLowerCase();
   let score = 0;
   if(type === 'acc'){
-    if(/accelerometer|acceleration|linear acceleration|accel|가속/.test(text)) score += 5;
+    if(/pocketlab|voyager|accelerometer|acceleration|linear acceleration|accel|가속/.test(text)) score += 5;
     if(/gyro|gyroscope|gyr|angular velocity|각속|rotation/.test(text)) score -= 3;
   } else {
-    if(/gyro|gyroscope|gyr|angular velocity|각속|rotation/.test(text)) score += 5;
+    if(/pocketlab|voyager|gyro|gyroscope|gyr|angular velocity|angular\s*velocity|각속|rotation/.test(text)) score += 5;
     if(/accelerometer|acceleration|accel|가속/.test(text)) score -= 2;
   }
   return score;
@@ -1040,13 +1073,13 @@ function populateSelectors(){
   }
 
   const lower = headers.map(h => h.toLowerCase());
-  let timeIdx = lower.findIndex(h => /time|시간|t\s*\(?s?\)?/.test(h));
+  let timeIdx = lower.findIndex(h => /time|시간|elapsed|t\s*\(?s?\)?/.test(h));
   if(timeIdx < 0) timeIdx = findLikelyTimeColumn();
   $('timeCol').value = Math.max(0, timeIdx);
 
   const numericCols = headers.map((h,i)=>({i, s: std(data.map(r=>r[i]))}));
-  const accCandidates = lower.map((h,i)=>({h,i})).filter(o => /acc|accel|acceleration|가속|linear/.test(o.h) && !/gyro|gyr|각속|rotation/.test(o.h));
-  const gyroCandidates = lower.map((h,i)=>({h,i})).filter(o => /gyro|gyr|angular velocity|rotation|각속|ω|w/.test(o.h));
+  const accCandidates = lower.map((h,i)=>({h,i})).filter(o => /acc|accel|accelerometer|acceleration|가속|linear/.test(o.h) && !/gyro|gyr|각속|angular|rotation/.test(o.h));
+  const gyroCandidates = lower.map((h,i)=>({h,i})).filter(o => /gyro|gyr|gyroscope|angular\s*velocity|angular velocity|rotation|각속|ω|w/.test(o.h));
 
   let accIdx = pickLargestStd(accCandidates.map(o=>o.i), timeIdx);
   if(accIdx < 0) accIdx = pickLargestStd(numericCols.map(o=>o.i), timeIdx);
@@ -1946,6 +1979,8 @@ function getPhysicalModelInputs(){
 function analyze(){
   if(!data.length) return;
   const timeIdx = Number($('timeCol').value), accIdx = Number($('accCol').value), gyroIdx = Number($('gyroCol').value);
+  const gyroScale = angularVelocityScaleForHeader(headers[gyroIdx]);
+  const gyroUnitNote = angularVelocityUnitNote(headers[gyroIdx]);
   let rows = data.map(r => ({t:r[timeIdx], acc:r[accIdx], gyro:r[gyroIdx]})).filter(r => Number.isFinite(r.t) && Number.isFinite(r.acc));
   rows.sort((a,b)=>a.t-b.t);
   // remove duplicate times
@@ -1964,7 +1999,7 @@ function analyze(){
   const t0 = rows[0].rel;
   const t = rows.map(r => r.rel - t0);
   const accRaw = rows.map(r => r.acc);
-  const gyroRaw = rows.map(r => Number.isFinite(r.gyro) ? r.gyro : NaN);
+  const gyroRaw = rows.map(r => Number.isFinite(r.gyro) ? r.gyro * gyroScale : NaN);
   const dts=[]; for(let i=1;i<t.length;i++) if(t[i]>t[i-1]) dts.push(t[i]-t[i-1]);
   const dt = median(dts);
   const acc = accRaw.map(v => v - mean(accRaw));
@@ -2015,7 +2050,7 @@ function analyze(){
   const decayRatio = rms(acc.slice(-third)) / rms(acc.slice(0,third));
   const regularity = Number.isFinite(periodAcc.cv) ? Math.max(0, 1-periodAcc.cv) : NaN;
 
-  lastResult = {headers, selected:{time:headers[timeIdx], acc:headers[accIdx], gyro:headers[gyroIdx]}, trim:{...trim, originalDuration, rowsBeforeTrim, rowsAfterTrim:rows.length}, t, accRaw, acc, gyro, angAcc, dt, spAcc, spAng, peaks, topTwo, fLow, fHigh, beatT, fMean, omegaLow, omegaHigh, omegaLow2, omegaHigh2, omegaMean, phys, periodAcc, damping, accNorm, angNorm, zeroPhaseCorr, lagInfo, phaseDeg, accEnv, angEnv, envCorr, couplingScore, spikeRatio, decayRatio, regularity, envWin, domFreq};
+  lastResult = {headers, sourceKind:detectedSourceKind, gyroScale, gyroUnitNote, selected:{time:headers[timeIdx], acc:headers[accIdx], gyro:headers[gyroIdx]}, trim:{...trim, originalDuration, rowsBeforeTrim, rowsAfterTrim:rows.length}, t, accRaw, acc, gyro, angAcc, dt, spAcc, spAng, peaks, topTwo, fLow, fHigh, beatT, fMean, omegaLow, omegaHigh, omegaLow2, omegaHigh2, omegaMean, phys, periodAcc, damping, accNorm, angNorm, zeroPhaseCorr, lagInfo, phaseDeg, accEnv, angEnv, envCorr, couplingScore, spikeRatio, decayRatio, regularity, envWin, domFreq};
   renderResults();
 }
 
@@ -2031,10 +2066,11 @@ function renderResults(){
   $('couplingVal').textContent = classifyCoupling(r.envCorr);
 
   const badges = [];
-  badges.push(`<span class="pill">업로드: ${uploadSourceMode === 'split' ? '2파일 결합' : '단일 파일'}</span>`);
+  badges.push(`<span class="pill">업로드: ${sourceKindLabel(r.sourceKind || uploadSourceMode)}</span>`);
   badges.push(`<span class="pill">시간: ${escapeHtml(r.selected.time)}</span>`);
   badges.push(`<span class="pill">가속도: ${escapeHtml(r.selected.acc)}</span>`);
   badges.push(`<span class="pill">각속도: ${escapeHtml(r.selected.gyro)}</span>`);
+  if(r.gyroScale && r.gyroScale !== 1) badges.push(`<span class="pill">deg/s → rad/s 자동 변환</span>`);
   badges.push(`<span class="pill">분석 구간: ${short(r.trim.start,2)}~${short(r.trim.end,2)} s</span>`);
   badges.push(`<span class="pill">제외 행: ${r.trim.rowsBeforeTrim-r.trim.rowsAfterTrim}개</span>`);
   badges.push(`<span class="pill">FFT N=${r.spAcc.N}</span>`);
@@ -2058,6 +2094,7 @@ function renderResults(){
   lines.push('\n■ 1. 분석 구간과 자료 품질');
   lines.push(`· 분석 자료 수는 ${r.t.length}개, 평균 시간 간격은 ${short(r.dt,4)} s입니다.`);
   if(uploadSourceMode === 'split') lines.push('· Accelerometer.csv와 Gyroscope.csv를 각각 읽은 뒤, 두 파일의 시간축을 0초 기준으로 맞추고 자이로스코프 값을 가속도 시간축에 선형 보간하여 병진-회전 비교가 가능하도록 결합했습니다.');
+  if(r.sourceKind === 'pocketlab') lines.push(`· PocketLab Voyager CSV 자동 인식 모드로 처리했습니다. ${r.gyroUnitNote}. 선택한 가속도 열은 병진 운동, 선택한 Angular Velocity 열은 비틀림 회전 운동 분석에 사용했습니다.`);
   if(r.trim.mode === 'full') lines.push(`· 전체 자료를 분석했습니다. 전체 시간 범위는 0~${short(r.trim.originalDuration,2)} s입니다. 시작/끝 버튼 조작이 그래프에 남아 있으면 구간 제외 모드를 사용하는 것이 좋습니다.`);
   else lines.push(`· 시작/끝 방해 구간을 제외하고 ${short(r.trim.start,2)}~${short(r.trim.end,2)} s 구간만 분석했습니다. 제외된 행은 ${r.trim.rowsBeforeTrim-r.trim.rowsAfterTrim}개입니다.`);
   if(Number.isFinite(r.spikeRatio) && r.spikeRatio > 3.0) lines.push(`· 가속도 자료에 순간적으로 큰 튐이 남아 있습니다. 피크/FFT 분석에 영향을 줄 수 있으므로 분석 시작·끝 시간을 다시 조정해 보세요.`);
@@ -2168,6 +2205,9 @@ function downloadResultCSV(){
   lines.push('item,value,unit');
   lines.push(`rows,${r.t.length},count`);
   lines.push(`dt,${r.dt},s`);
+  lines.push(`data_source,${r.sourceKind || uploadSourceMode},`);
+  lines.push(`gyro_unit_scale,${r.gyroScale ?? 1},multiply_selected_gyro_by_this`);
+  lines.push(`gyro_unit_note,${r.gyroUnitNote || ''},`);
   lines.push(`trim_mode,${r.trim.mode},`);
   lines.push(`trim_start,${r.trim.start},s`);
   lines.push(`trim_end,${r.trim.end},s`);
@@ -2219,17 +2259,19 @@ async function handleFiles(fileList){
     if(files.length === 1){
       uploadSourceMode = 'single';
       data = await parseFile(files[0]);
+      detectedSourceKind = isPocketLabDataset(headers, [files[0].name]) ? 'pocketlab' : 'single';
       rawRows = data;
       populateSelectors();
       renderPreview();
       updateRangeInfo();
-      $('fileInfo').innerHTML = `<b>${escapeHtml(files[0].name)}</b><br>단일 파일 모드 · ${data.length}개 데이터 행, ${headers.length}개 열을 읽었습니다.`;
+      $('fileInfo').innerHTML = `<b>${escapeHtml(files[0].name)}</b><br>${sourceKindLabel(detectedSourceKind)} · ${data.length}개 데이터 행, ${headers.length}개 열을 읽었습니다.` + (detectedSourceKind === 'pocketlab' ? `<br>${pocketLabColumnHint()}` : '');
       analyzeBtn.disabled = false;
       analyze();
       return;
     }
 
     uploadSourceMode = 'split';
+    detectedSourceKind = 'split';
     const parsedFiles = [];
     for(const file of files){
       const rows = await parseFile(file);
