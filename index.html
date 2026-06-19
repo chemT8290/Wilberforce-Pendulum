@@ -96,6 +96,22 @@
     .stepFlow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
     .stepFlow div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;font-size:13px;color:#344055;font-weight:800}
     .arrowTxt{color:#2457ff;font-weight:900}
+    .compareControls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+    .compareControls .full{grid-column:1 / -1}
+    .compareActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .tiny{font-size:12px;color:#687386}
+    .storeTable{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:10px}
+    .storeTable th,.storeTable td{padding:8px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    .storeTable th{background:#f5f7fb;color:#263247;font-weight:800;white-space:nowrap}
+    .storeTable tr:last-child th,.storeTable tr:last-child td{border-bottom:0}
+    .storeStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+    .storeStat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
+    .storeStat b{display:block;font-size:19px;letter-spacing:-.03em;margin-top:3px}
+    .storeHint{background:#f7fbff;border:1px solid #dbe6ff;border-radius:14px;padding:12px;font-size:13px;color:#334155;margin-top:10px}
+    .optionBox{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .optionBox label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:13px;color:#334155;font-weight:800}
+    .optionBox input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent)}
+    .formulaSmall{font-size:12px;color:#4a5568;background:#fbfcff;border:1px dashed #cfd8ea;border-radius:10px;padding:8px 10px;margin-top:8px}
     @media(max-width:900px){.formulaGrid,.stepFlow{grid-template-columns:1fr}.stepFlow div{text-align:left}}
 
     @media(max-width:720px){.learnGrid,.checklist{grid-template-columns:1fr}.learnTabButtons{gap:6px}.learnTabBtn{font-size:12px;padding:8px 10px}}
@@ -250,6 +266,7 @@
             <button class="learnTabBtn" type="button" data-learn-tab="theory">관련 이론</button>
             <button class="learnTabBtn" type="button" data-learn-tab="interpretation">결과 해석</button>
             <button class="learnTabBtn" type="button" data-learn-tab="report">보고서 정리</button>
+            <button class="learnTabBtn" type="button" data-learn-tab="compare">여러 실험 조건 누적 비교</button>
           </div>
 
           
@@ -517,6 +534,104 @@
             </div>
           </div>
 
+          <div class="learnPanel" id="learn-compare">
+            <div class="learnLead"><b>누적 비교 탭 사용법</b> — 한 조건을 분석한 뒤 아래에 조건 정보를 적고 <b>현재 분석 결과 누적 저장</b>을 누르세요. 저장된 값은 이 브라우저에 유지되며, 볼트 위치별 <b>1/I′–ω²</b> 산점도, 질량 조건별 정상모드 비교 그래프, 스프링 종류별 결과 그래프가 자동으로 갱신됩니다.</div>
+            <div class="learnGrid">
+              <div class="learnCard">
+                <h3>현재 결과 저장 정보</h3>
+                <div class="compareControls">
+                  <div class="full">
+                    <label for="compConditionName">실험 조건 이름</label>
+                    <input id="compConditionName" type="text" placeholder="예: 볼트 8 cm / 질량 0.219 kg / 스프링 2" />
+                  </div>
+                  <div>
+                    <label for="compBoltLabel">볼트 위치 조건</label>
+                    <input id="compBoltLabel" type="text" placeholder="예: 중심에서 8 cm" />
+                  </div>
+                  <div>
+                    <label for="compMassLabel">질량 조건 이름</label>
+                    <input id="compMassLabel" type="text" placeholder="예: 0.219 kg" />
+                  </div>
+                  <div>
+                    <label for="compSpringType">스프링 종류</label>
+                    <input id="compSpringType" type="text" placeholder="예: 1 또는 A" />
+                  </div>
+                  <div>
+                    <label for="compMemo">메모</label>
+                    <input id="compMemo" type="text" placeholder="예: 초기조건-아래로만 당김" />
+                  </div>
+                </div>
+                <div class="compareActions">
+                  <button id="saveComparisonBtn" type="button">현재 조건 저장</button>
+                  <button id="exportComparisonBtn" type="button" class="secondary">누적 CSV 내보내기</button>
+                  <button id="clearComparisonBtn" type="button" class="ghost">누적값 모두 지우기</button>
+                </div>
+                <div class="storeHint optionBox">
+                  <label><input id="trendToggle" type="checkbox" checked /> 추세선 표시</label>
+                  <label><input id="aggregateToggle" type="checkbox" checked /> 반복 측정 평균±표준편차 표시</label>
+                  <label><input id="labelToggle" type="checkbox" checked /> 조건 이름 표시</label>
+                </div>
+                <div id="comparisonCurrentInfo" class="storeHint">아직 저장되지 않았습니다. 먼저 데이터를 분석한 뒤 현재 조건 정보를 입력하세요.</div>
+              </div>
+              <div class="learnCard">
+                <h3>그래프 해석 포인트</h3>
+                <ul>
+                  <li><b>볼트 위치별 1/I′–ω² 그래프</b>: 회전 관성이 달라질 때 두 정상모드의 각진동수 제곱이 어떻게 바뀌는지 봅니다.</li>
+                  <li><b>질량 조건별 그래프</b>: 질량이 달라질 때 ω₁², ω₂²가 어떻게 이동하는지 확인합니다.</li>
+                  <li><b>스프링 종류별 그래프</b>: 스프링 1, 2, 3처럼 다른 용수철이 결과에 주는 차이를 비교합니다.</li>
+                </ul>
+                <div class="storeHint"><b>중요</b> — 1/I′ 그래프를 제대로 그리려면 왼쪽의 <b>진동자 관성모멘트 I</b>와 가능하면 <b>스프링 관성모멘트 Iₛ</b>를 입력해야 합니다. 질량 비교 그래프는 <b>질량 m</b> 또는 보정 질량 m′가 있어야 정확합니다.</div>
+                <div class="tiny">저장 형식: 조건 이름, 파일명, 볼트 위치, 질량 조건, 스프링 종류, f₁, f₂, ω₁², ω₂², 1/I′, m′, 맥놀이 주기</div>
+              </div>
+            </div>
+
+            <div class="storeStats">
+              <div class="storeStat"><span class="tiny">저장 조건 수</span><b id="compCount">0</b></div>
+              <div class="storeStat"><span class="tiny">1/I′ 그래프 점 수</span><b id="compInvCount">0</b></div>
+              <div class="storeStat"><span class="tiny">질량 그래프 점 수</span><b id="compMassCount">0</b></div>
+              <div class="storeStat"><span class="tiny">스프링 종류 수</span><b id="compSpringCount">0</b></div>
+            </div>
+
+            <div style="overflow:auto;max-height:280px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:12px">
+              <table class="storeTable" id="comparisonTable">
+                <thead>
+                  <tr>
+                    <th>#</th><th>조건 이름</th><th>볼트 위치</th><th>질량 조건</th><th>스프링</th><th>1/I′</th><th>ω₁²</th><th>ω₂²</th><th>T<sub>B</sub></th><th>메모</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="10" class="tiny">아직 저장된 조건이 없습니다.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="overflow:auto;max-height:260px;border:1px solid var(--line);border-radius:14px;background:#fff;margin-top:12px">
+              <table class="storeTable" id="replicateTable">
+                <thead>
+                  <tr>
+                    <th>비교 기준</th><th>조건</th><th>n</th><th>ω₁² 평균±표준편차</th><th>ω₂² 평균±표준편차</th><th>1/I′ 평균</th><th>질량 평균</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="7" class="tiny">같은 조건을 2회 이상 저장하면 평균과 표준편차가 표시됩니다.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="chartWrap">
+              <div class="chartTop"><b>볼트 위치별 1/I′ – ω² 비교 그래프</b><span>여러 조건을 누적 저장하면 ω₁², ω₂²를 산점도로 표시</span></div>
+              <canvas id="invIChart"></canvas>
+            </div>
+            <div class="chartWrap">
+              <div class="chartTop"><b>질량 조건별 정상모드 주파수 비교 그래프</b><span>x축은 m 또는 보정 질량 m′, y축은 ω₁², ω₂²</span></div>
+              <canvas id="massCompareChart"></canvas>
+            </div>
+            <div class="chartWrap">
+              <div class="chartTop"><b>스프링 종류별 결과 비교 그래프</b><span>스프링 1, 2, 3 등 범주별로 ω₁², ω₂²를 비교</span></div>
+              <canvas id="springCompareChart"></canvas>
+            </div>
+          </div>
+
         </div>
         <div id="summary" class="summary">파일을 업로드하고 분석을 실행하면 결과 해석 문장이 생성됩니다.</div>
 
@@ -600,6 +715,8 @@ let data = [];
 let lastResult = null;
 let uploadSourceMode = 'single';
 let uploadedFileNames = [];
+let comparisonStore = [];
+const COMPARISON_STORAGE_KEY = 'wilberforce_comparison_store_v2';
 
 const $ = id => document.getElementById(id);
 const drop = $('drop');
@@ -1235,6 +1352,570 @@ function normalizeForPlot(y){
   return y.map(v => Number.isFinite(v) ? v/s : NaN);
 }
 
+function getCurrentComparisonDraft(){
+  return {
+    label: $('compConditionName')?.value?.trim() || '',
+    boltLabel: $('compBoltLabel')?.value?.trim() || '',
+    massLabel: $('compMassLabel')?.value?.trim() || '',
+    springType: $('compSpringType')?.value?.trim() || '',
+    memo: $('compMemo')?.value?.trim() || ''
+  };
+}
+
+function setSuggestedComparisonFields(force=false){
+  const nameEl = $('compConditionName');
+  const boltEl = $('compBoltLabel');
+  const massEl = $('compMassLabel');
+  const springEl = $('compSpringType');
+  if(!nameEl) return;
+  const baseFiles = uploadedFileNames.length ? uploadedFileNames.map(n => n.replace(/\\.[^.]+$/,'')).join(' + ') : `조건 ${comparisonStore.length+1}`;
+  if(force || !nameEl.value.trim()) nameEl.value = baseFiles;
+  if(lastResult){
+    if((force || !massEl.value.trim()) && Number.isFinite(lastResult.phys?.m ?? NaN)) massEl.value = `m=${short(lastResult.phys.m,3)} kg`;
+    if(force || !boltEl.value.trim()){
+      if(Number.isFinite(lastResult.phys?.I ?? NaN)) boltEl.placeholder = `예: I=${short(lastResult.phys.I,6)} kg·m²에 해당하는 볼트 위치`;
+    }
+    if(force || !springEl.value.trim()) springEl.placeholder = '예: 1 또는 A';
+  }
+  updateCurrentComparisonInfo();
+}
+
+function updateCurrentComparisonInfo(){
+  const el = $('comparisonCurrentInfo');
+  if(!el) return;
+  if(!lastResult){
+    el.innerHTML = '아직 분석된 현재 결과가 없습니다. 먼저 데이터를 업로드하고 자동 분석을 실행하세요.';
+    return;
+  }
+  const meta = getCurrentComparisonDraft();
+  const pieces = [];
+  pieces.push(`<b>현재 분석 요약</b> — f₁=${short(lastResult.fLow,3)} Hz, f₂=${short(lastResult.fHigh,3)} Hz, ω₁²=${short(lastResult.omegaLow2,2)}, ω₂²=${short(lastResult.omegaHigh2,2)}`);
+  if(Number.isFinite(lastResult.phys?.invIEff)) pieces.push(`1/I′=${short(lastResult.phys.invIEff,2)}`);
+  else if(Number.isFinite(lastResult.phys?.I ?? NaN)) pieces.push(`1/I=${short(1/lastResult.phys.I,2)}`);
+  if(Number.isFinite(lastResult.phys?.mEff)) pieces.push(`m′=${short(lastResult.phys.mEff,4)} kg`);
+  else if(Number.isFinite(lastResult.phys?.m ?? NaN)) pieces.push(`m=${short(lastResult.phys.m,4)} kg`);
+  pieces.push(`<br><span class="tiny">저장 예정 조건 이름: ${escapeHtml(meta.label || '(미입력)')} / 볼트 위치: ${escapeHtml(meta.boltLabel || '(미입력)')} / 질량 조건: ${escapeHtml(meta.massLabel || '(미입력)')} / 스프링: ${escapeHtml(meta.springType || '(미입력)')}</span>`);
+  el.innerHTML = pieces.join(' · ');
+}
+
+function saveComparisonStoreLocal(){
+  try{ localStorage.setItem(COMPARISON_STORAGE_KEY, JSON.stringify(comparisonStore)); }catch(e){}
+}
+
+function loadComparisonStoreLocal(){
+  try{
+    const raw = localStorage.getItem(COMPARISON_STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)) comparisonStore = parsed;
+    }
+  }catch(e){ comparisonStore = []; }
+}
+
+function buildComparisonEntry(){
+  if(!lastResult) return null;
+  const meta = getCurrentComparisonDraft();
+  const r = lastResult;
+  const fallbackInvI = Number.isFinite(r.phys?.invIEff) ? r.phys.invIEff : (Number.isFinite(r.phys?.I ?? NaN) && r.phys.I !== 0 ? 1/r.phys.I : NaN);
+  const massX = Number.isFinite(r.phys?.mEff) ? r.phys.mEff : (Number.isFinite(r.phys?.m ?? NaN) ? r.phys.m : NaN);
+  return {
+    id: `cmp_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    createdAt: new Date().toISOString(),
+    files: uploadedFileNames.slice(),
+    label: meta.label || `${uploadedFileNames.join(' + ') || '조건'} ${comparisonStore.length+1}`,
+    boltLabel: meta.boltLabel || '',
+    massLabel: meta.massLabel || '',
+    springType: meta.springType || '',
+    memo: meta.memo || '',
+    f1: r.fLow, f2: r.fHigh,
+    omega1: r.omegaLow, omega2: r.omegaHigh,
+    omega1sq: r.omegaLow2, omega2sq: r.omegaHigh2,
+    beatT: r.beatT,
+    m: r.phys?.m ?? NaN,
+    I: r.phys?.I ?? NaN,
+    ms: r.phys?.ms ?? NaN,
+    Is: r.phys?.Is ?? NaN,
+    mEff: r.phys?.mEff ?? NaN,
+    IEff: r.phys?.IEff ?? NaN,
+    invIEff: fallbackInvI,
+    massX
+  };
+}
+
+function addCurrentResultToComparison(){
+  if(!lastResult) return alert('먼저 파일을 분석해 현재 결과를 만든 뒤 저장하세요.');
+  const entry = buildComparisonEntry();
+  if(!Number.isFinite(entry.omega1sq) || !Number.isFinite(entry.omega2sq)) return alert('정상모드 주파수 f₁, f₂가 계산되지 않아 저장할 수 없습니다. FFT 범위나 분석 구간을 조정해 다시 분석하세요.');
+  comparisonStore.push(entry);
+  saveComparisonStoreLocal();
+  renderComparisonStore();
+}
+
+function clearComparisonStore(){
+  if(!comparisonStore.length) return;
+  if(!confirm('누적 저장한 모든 조건을 삭제할까요?')) return;
+  comparisonStore = [];
+  saveComparisonStoreLocal();
+  renderComparisonStore();
+}
+
+function exportComparisonCSV(){
+  if(!comparisonStore.length) return alert('내보낼 누적 데이터가 없습니다.');
+  const lines = ['index,label,bolt_position,mass_label,spring_type,memo,f1_Hz,f2_Hz,omega1_rad_s,omega2_rad_s,omega1_sq,omega2_sq,beat_period_s,m_kg,I_kgm2,ms_kg,Is_kgm2,m_eff_kg,I_eff_kgm2,inv_I_eff,files,created_at'];
+  comparisonStore.forEach((e,idx) => {
+    const row = [idx+1,e.label,e.boltLabel,e.massLabel,e.springType,e.memo,e.f1,e.f2,e.omega1,e.omega2,e.omega1sq,e.omega2sq,e.beatT,e.m,e.I,e.ms,e.Is,e.mEff,e.IEff,e.invIEff,(e.files||[]).join(' + '),e.createdAt]
+      .map(v => '"'+String(v ?? '').replace(/"/g,'""')+'"').join(',');
+    lines.push(row);
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'wilberforce_comparison_store.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function drawScatterChart(canvas, series, opts={}){
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(rect.width*dpr); canvas.height = Math.floor(rect.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W = rect.width, H = rect.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,H);
+  const pad = {l:66,r:20,t:18,b:48};
+  const plotW = W-pad.l-pad.r, plotH = H-pad.t-pad.b;
+  let xs=[], ys=[];
+  series.forEach(s => (s.points||[]).forEach(p => { if(Number.isFinite(p.x) && Number.isFinite(p.y)){ xs.push(p.x); ys.push(p.y);} }));
+  if(!xs.length || !ys.length){ ctx.fillStyle='#687386'; ctx.font='14px system-ui'; ctx.fillText('누적 저장된 비교 데이터가 부족합니다.', pad.l, pad.t+28); return; }
+  let xMin = opts.xMin ?? Math.min(...xs), xMax = opts.xMax ?? Math.max(...xs);
+  let yMin = opts.yMin ?? Math.min(...ys), yMax = opts.yMax ?? Math.max(...ys);
+  if(xMax === xMin){ xMax += 1; xMin -= 1; }
+  if(yMax === yMin){ yMax += 1; yMin -= 1; }
+  const xPad = (xMax-xMin)*0.08, yPad = (yMax-yMin)*0.10;
+  xMin -= xPad; xMax += xPad; yMin -= yPad; yMax += yPad;
+  const X = x => pad.l + (x-xMin)/(xMax-xMin)*plotW;
+  const Y = y => pad.t + (yMax-y)/(yMax-yMin)*plotH;
+
+  ctx.strokeStyle='#e5eaf2'; ctx.lineWidth=1; ctx.beginPath();
+  for(let i=0;i<=5;i++){ const yy = pad.t + plotH*i/5; ctx.moveTo(pad.l,yy); ctx.lineTo(pad.l+plotW,yy); }
+  if(opts.xTicks?.length){ opts.xTicks.forEach(tk => { const xx = X(tk.value); ctx.moveTo(xx,pad.t); ctx.lineTo(xx,pad.t+plotH); }); }
+  else{ for(let i=0;i<=6;i++){ const xx = pad.l + plotW*i/6; ctx.moveTo(xx,pad.t); ctx.lineTo(xx,pad.t+plotH); } }
+  ctx.stroke();
+  ctx.strokeStyle='#9aa6ba'; ctx.beginPath(); ctx.rect(pad.l,pad.t,plotW,plotH); ctx.stroke();
+
+  ctx.fillStyle='#687386'; ctx.font='11px system-ui'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=5;i++){
+    const val = yMax - (yMax-yMin)*i/5;
+    ctx.fillText(short(val,2), pad.l-8, pad.t+plotH*i/5);
+  }
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  if(opts.xTicks?.length){
+    opts.xTicks.forEach(tk => { ctx.fillText(String(tk.label), X(tk.value), pad.t+plotH+10); });
+  } else {
+    for(let i=0;i<=6;i++){ const val = xMin + (xMax-xMin)*i/6; ctx.fillText(short(val,2), pad.l+plotW*i/6, pad.t+plotH+10); }
+  }
+
+  const colors = ['#2457ff','#19a77b','#e87b1e','#c83232','#6b4eff'];
+  series.forEach((s,si) => {
+    const color = s.color || colors[si%colors.length];
+    const pts = (s.points||[]).filter(p => Number.isFinite(p.x)&&Number.isFinite(p.y));
+    if(!pts.length) return;
+    const sorted = pts.slice().sort((a,b)=>a.x-b.x);
+    if(s.connect){ ctx.strokeStyle=color; ctx.globalAlpha=.35; ctx.lineWidth=1.6; ctx.beginPath(); sorted.forEach((p,i)=>{ const xx=X(p.x), yy=Y(p.y); if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }); ctx.stroke(); ctx.globalAlpha=1; }
+    pts.forEach((p,pi) => {
+      const xx=X(p.x), yy=Y(p.y);
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(xx,yy,4.5,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
+      if((opts.showLabels && pts.length <= 10) || p.showLabel){
+        ctx.fillStyle='#344055'; ctx.font='10px system-ui'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+        ctx.fillText(p.label || '', xx+5, yy-4);
+      }
+    });
+  });
+
+  ctx.textAlign='left'; ctx.textBaseline='top'; ctx.font='12px system-ui';
+  let lx = pad.l+8, ly = pad.t+8;
+  series.forEach((s,si) => {
+    const color = s.color || colors[si%colors.length];
+    ctx.fillStyle=color; ctx.fillRect(lx,ly+4,14,3); ctx.fillStyle='#344055'; ctx.fillText(s.name, lx+20, ly);
+    lx += Math.min(170, 22 + ctx.measureText(s.name).width + 34); if(lx > W-180){ lx = pad.l+8; ly += 18; }
+  });
+
+  if(opts.xLabel){ ctx.fillStyle='#687386'; ctx.font='12px system-ui'; ctx.textAlign='center'; ctx.fillText(opts.xLabel, pad.l+plotW/2, H-6); }
+  if(opts.yLabel){ ctx.save(); ctx.translate(14, pad.t+plotH/2); ctx.rotate(-Math.PI/2); ctx.fillStyle='#687386'; ctx.font='12px system-ui'; ctx.textAlign='center'; ctx.fillText(opts.yLabel, 0,0); ctx.restore(); }
+}
+
+function renderComparisonStore(){
+  const body = document.querySelector('#comparisonTable tbody');
+  if(body){
+    if(!comparisonStore.length){
+      body.innerHTML = '<tr><td colspan="10" class="tiny">아직 저장된 조건이 없습니다.</td></tr>';
+    } else {
+      body.innerHTML = comparisonStore.map((e,idx) => `<tr>
+        <td>${idx+1}</td>
+        <td>${escapeHtml(e.label || '')}</td>
+        <td>${escapeHtml(e.boltLabel || '')}</td>
+        <td>${escapeHtml(e.massLabel || '')}</td>
+        <td>${escapeHtml(e.springType || '')}</td>
+        <td>${short(e.invIEff,2)}</td>
+        <td>${short(e.omega1sq,2)}</td>
+        <td>${short(e.omega2sq,2)}</td>
+        <td>${short(e.beatT,2)}</td>
+        <td>${escapeHtml(e.memo || '')}</td>
+      </tr>`).join('');
+    }
+  }
+
+  const invEntries = comparisonStore.filter(e => Number.isFinite(e.invIEff) && Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq));
+  const massEntries = comparisonStore.filter(e => Number.isFinite(e.massX) && Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq));
+  const springCats = Array.from(new Set(comparisonStore.map(e => (e.springType || '').trim()).filter(Boolean)));
+  $('compCount').textContent = String(comparisonStore.length);
+  $('compInvCount').textContent = String(invEntries.length);
+  $('compMassCount').textContent = String(massEntries.length);
+  $('compSpringCount').textContent = String(springCats.length);
+
+  drawScatterChart($('invIChart'), [
+    {name:'ω₁²', color:'#2457ff', connect:true, points:invEntries.map(e => ({x:e.invIEff, y:e.omega1sq, label:e.boltLabel || e.label}))},
+    {name:'ω₂²', color:'#e87b1e', connect:true, points:invEntries.map(e => ({x:e.invIEff, y:e.omega2sq, label:e.boltLabel || e.label}))}
+  ], {xLabel:'1 / I′  또는 1 / I', yLabel:'ω² (rad²/s²)', showLabels:true});
+
+  drawScatterChart($('massCompareChart'), [
+    {name:'ω₁²', color:'#19a77b', connect:true, points:massEntries.map(e => ({x:e.massX, y:e.omega1sq, label:e.massLabel || e.label}))},
+    {name:'ω₂²', color:'#c83232', connect:true, points:massEntries.map(e => ({x:e.massX, y:e.omega2sq, label:e.massLabel || e.label}))}
+  ], {xLabel:'질량 m 또는 보정 질량 m′ (kg)', yLabel:'ω² (rad²/s²)', showLabels:true});
+
+  const categories = Array.from(new Set(comparisonStore.map(e => (e.springType || '미입력').trim() || '미입력')));
+  const counts = {};
+  const springSeries1 = [], springSeries2 = [];
+  categories.forEach((cat,ci) => { counts[cat]=0; });
+  comparisonStore.forEach(e => {
+    const cat = (e.springType || '미입력').trim() || '미입력';
+    const base = categories.indexOf(cat) + 1;
+    const rep = counts[cat]++;
+    const jitter = ((rep % 5) - 2) * 0.035;
+    if(Number.isFinite(e.omega1sq)) springSeries1.push({x:base - 0.08 + jitter, y:e.omega1sq, label:e.label});
+    if(Number.isFinite(e.omega2sq)) springSeries2.push({x:base + 0.08 + jitter, y:e.omega2sq, label:e.label});
+  });
+  drawScatterChart($('springCompareChart'), [
+    {name:'ω₁²', color:'#6b4eff', points:springSeries1},
+    {name:'ω₂²', color:'#19a77b', points:springSeries2}
+  ], {xTicks: categories.map((c,i)=>({value:i+1,label:c})), xLabel:'스프링 종류', yLabel:'ω² (rad²/s²)', showLabels:false});
+
+  updateCurrentComparisonInfo();
+}
+
+
+function comparisonOptions(){
+  return {
+    trend: $('trendToggle') ? $('trendToggle').checked : true,
+    aggregate: $('aggregateToggle') ? $('aggregateToggle').checked : true,
+    labels: $('labelToggle') ? $('labelToggle').checked : true
+  };
+}
+
+function sdSample(vals){
+  const xs = vals.filter(Number.isFinite);
+  if(xs.length < 2) return NaN;
+  const m = mean(xs);
+  return Math.sqrt(xs.reduce((a,b)=>a+(b-m)*(b-m),0)/(xs.length-1));
+}
+
+function fmtMeanSd(m,s,d=2){
+  if(!Number.isFinite(m)) return '-';
+  return Number.isFinite(s) ? `${short(m,d)} ± ${short(s,d)}` : `${short(m,d)} ± -`;
+}
+
+function groupedStats(entries, keyFn){
+  const map = new Map();
+  for(const e of entries){
+    const key = keyFn(e);
+    if(!key) continue;
+    if(!map.has(key)) map.set(key, []);
+    map.get(key).push(e);
+  }
+  return Array.from(map.entries()).map(([key, arr]) => {
+    return {
+      key,
+      entries: arr,
+      n: arr.length,
+      xMean: mean(arr.map(e=>e.xVal)),
+      xSd: sdSample(arr.map(e=>e.xVal)),
+      massMean: mean(arr.map(e=>e.massX)),
+      invMean: mean(arr.map(e=>e.invIEff)),
+      omega1Mean: mean(arr.map(e=>e.omega1sq)),
+      omega1Sd: sdSample(arr.map(e=>e.omega1sq)),
+      omega2Mean: mean(arr.map(e=>e.omega2sq)),
+      omega2Sd: sdSample(arr.map(e=>e.omega2sq))
+    };
+  });
+}
+
+function numericGroupKey(label, value, prefix){
+  const s = String(label || '').trim();
+  if(s) return s;
+  return Number.isFinite(value) ? `${prefix}=${short(value,6)}` : '';
+}
+
+function getInvGroups(){
+  const entries = comparisonStore
+    .filter(e => Number.isFinite(e.invIEff) && Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq))
+    .map(e => ({...e, xVal:e.invIEff}));
+  return groupedStats(entries, e => numericGroupKey(e.boltLabel, e.invIEff, '1/I′'))
+    .sort((a,b)=>a.xMean-b.xMean);
+}
+
+function getMassGroups(){
+  const entries = comparisonStore
+    .filter(e => Number.isFinite(e.massX) && Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq))
+    .map(e => ({...e, xVal:e.massX}));
+  return groupedStats(entries, e => numericGroupKey(e.massLabel, e.massX, 'm'))
+    .sort((a,b)=>a.xMean-b.xMean);
+}
+
+function getSpringGroups(){
+  const entries = comparisonStore
+    .filter(e => Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq))
+    .map(e => ({...e, xVal:NaN}));
+  return groupedStats(entries, e => (e.springType || '미입력').trim() || '미입력')
+    .sort((a,b)=>a.key.localeCompare(b.key, 'ko'));
+}
+
+function pointsFromGroups(groups, modeKey, xKey='xMean'){
+  const yMeanKey = modeKey === 'omega1' ? 'omega1Mean' : 'omega2Mean';
+  const ySdKey = modeKey === 'omega1' ? 'omega1Sd' : 'omega2Sd';
+  return groups.map(g => ({
+    x: g[xKey],
+    y: g[yMeanKey],
+    yErr: g[ySdKey],
+    label: `${g.key}${g.n>1 ? ` (n=${g.n})` : ''}`,
+    showLabel: g.n > 1
+  })).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+}
+
+function rawPoints(entries, yKey){
+  return entries.map(e => ({x:e.xVal, y:e[yKey], label:e.boltLabel || e.massLabel || e.springType || e.label})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
+}
+
+function linearFit(points){
+  const pts = (points||[]).filter(p => Number.isFinite(p.x)&&Number.isFinite(p.y));
+  if(pts.length < 2) return null;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const mx=mean(xs), my=mean(ys);
+  let num=0, den=0, ssTot=0, ssRes=0;
+  for(let i=0;i<pts.length;i++){
+    num += (xs[i]-mx)*(ys[i]-my);
+    den += (xs[i]-mx)*(xs[i]-mx);
+  }
+  if(!den) return null;
+  const a = num/den;
+  const b = my - a*mx;
+  for(let i=0;i<pts.length;i++){
+    const pred = a*xs[i]+b;
+    ssTot += (ys[i]-my)*(ys[i]-my);
+    ssRes += (ys[i]-pred)*(ys[i]-pred);
+  }
+  return {slope:a, intercept:b, r2:ssTot ? 1-ssRes/ssTot : NaN};
+}
+
+function drawScatterChart(canvas, series, opts={}){
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(rect.width*dpr); canvas.height = Math.floor(rect.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W = rect.width, H = rect.height;
+  ctx.clearRect(0,0,W,H); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,H);
+  const pad = {l:70,r:26,t:20,b:54};
+  const plotW = W-pad.l-pad.r, plotH = H-pad.t-pad.b;
+  let xs=[], ys=[];
+  series.forEach(s => (s.points||[]).forEach(p => {
+    if(Number.isFinite(p.x) && Number.isFinite(p.y)){
+      xs.push(p.x); ys.push(p.y);
+      if(Number.isFinite(p.yErr)){ ys.push(p.y+p.yErr); ys.push(p.y-p.yErr); }
+    }
+  }));
+  if(!xs.length || !ys.length){
+    ctx.fillStyle='#687386'; ctx.font='14px system-ui'; ctx.fillText('누적 저장된 비교 데이터가 부족합니다.', pad.l, pad.t+30); return;
+  }
+  let xMin = opts.xMin ?? Math.min(...xs), xMax = opts.xMax ?? Math.max(...xs);
+  let yMin = opts.yMin ?? Math.min(...ys), yMax = opts.yMax ?? Math.max(...ys);
+  if(xMax === xMin){ xMax += 1; xMin -= 1; }
+  if(yMax === yMin){ yMax += 1; yMin -= 1; }
+  const xPad = (xMax-xMin)*0.08 || 1, yPad = (yMax-yMin)*0.10 || 1;
+  xMin -= xPad; xMax += xPad; yMin -= yPad; yMax += yPad;
+  const X = x => pad.l + (x-xMin)/(xMax-xMin)*plotW;
+  const Y = y => pad.t + (yMax-y)/(yMax-yMin)*plotH;
+
+  ctx.strokeStyle='#e5eaf2'; ctx.lineWidth=1; ctx.beginPath();
+  for(let i=0;i<=5;i++){ const yy = pad.t + plotH*i/5; ctx.moveTo(pad.l,yy); ctx.lineTo(pad.l+plotW,yy); }
+  if(opts.xTicks?.length){ opts.xTicks.forEach(tk => { const xx = X(tk.value); ctx.moveTo(xx,pad.t); ctx.lineTo(xx,pad.t+plotH); }); }
+  else{ for(let i=0;i<=6;i++){ const xx = pad.l + plotW*i/6; ctx.moveTo(xx,pad.t); ctx.lineTo(xx,pad.t+plotH); } }
+  ctx.stroke();
+  ctx.strokeStyle='#9aa6ba'; ctx.beginPath(); ctx.rect(pad.l,pad.t,plotW,plotH); ctx.stroke();
+
+  ctx.fillStyle='#687386'; ctx.font='11px system-ui'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=5;i++){
+    const val = yMax - (yMax-yMin)*i/5;
+    ctx.fillText(short(val,2), pad.l-8, pad.t+plotH*i/5);
+  }
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  if(opts.xTicks?.length){ opts.xTicks.forEach(tk => { ctx.fillText(String(tk.label), X(tk.value), pad.t+plotH+12); }); }
+  else{ for(let i=0;i<=6;i++){ const val = xMin + (xMax-xMin)*i/6; ctx.fillText(short(val,2), pad.l+plotW*i/6, pad.t+plotH+12); } }
+
+  const colors = ['#2457ff','#e87b1e','#19a77b','#c83232','#6b4eff'];
+  series.forEach((s,si) => {
+    const color = s.color || colors[si%colors.length];
+    const pts = (s.points||[]).filter(p => Number.isFinite(p.x)&&Number.isFinite(p.y));
+    if(!pts.length) return;
+    const sorted = pts.slice().sort((a,b)=>a.x-b.x);
+    if(s.connect){
+      ctx.strokeStyle=color; ctx.globalAlpha=.25; ctx.lineWidth=1.4; ctx.beginPath();
+      sorted.forEach((p,i)=>{ const xx=X(p.x), yy=Y(p.y); if(i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); });
+      ctx.stroke(); ctx.globalAlpha=1;
+    }
+    pts.forEach(p => {
+      const xx=X(p.x), yy=Y(p.y);
+      if(Number.isFinite(p.yErr) && p.yErr > 0){
+        const y1=Y(p.y-p.yErr), y2=Y(p.y+p.yErr);
+        ctx.strokeStyle=color; ctx.globalAlpha=.85; ctx.lineWidth=1.5; ctx.beginPath();
+        ctx.moveTo(xx,y1); ctx.lineTo(xx,y2); ctx.moveTo(xx-5,y1); ctx.lineTo(xx+5,y1); ctx.moveTo(xx-5,y2); ctx.lineTo(xx+5,y2); ctx.stroke(); ctx.globalAlpha=1;
+      }
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(xx,yy,5,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke();
+      if((opts.showLabels && pts.length <= 12) || p.showLabel){
+        ctx.fillStyle='#344055'; ctx.font='10px system-ui'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+        ctx.fillText(p.label || '', xx+6, yy-5);
+      }
+    });
+    if(opts.trend && !opts.xTicks?.length){
+      const fit = linearFit(pts);
+      if(fit){
+        const xA = Math.min(...pts.map(p=>p.x));
+        const xB = Math.max(...pts.map(p=>p.x));
+        ctx.strokeStyle=color; ctx.globalAlpha=.8; ctx.lineWidth=2; ctx.setLineDash([6,5]); ctx.beginPath();
+        ctx.moveTo(X(xA), Y(fit.slope*xA+fit.intercept)); ctx.lineTo(X(xB), Y(fit.slope*xB+fit.intercept)); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+        if(opts.showTrendText){
+          const txt = `${s.name} 추세선: y=${short(fit.slope,3)}x+${short(fit.intercept,3)}, R²=${short(fit.r2,3)}`;
+          ctx.fillStyle=color; ctx.font='11px system-ui'; ctx.textAlign='left'; ctx.textBaseline='top';
+          ctx.fillText(txt, pad.l+8, pad.t+32+si*16);
+        }
+      }
+    }
+  });
+
+  ctx.textAlign='left'; ctx.textBaseline='top'; ctx.font='12px system-ui';
+  let lx = pad.l+8, ly = pad.t+8;
+  series.forEach((s,si) => {
+    const color = s.color || colors[si%colors.length];
+    ctx.fillStyle=color; ctx.fillRect(lx,ly+4,14,3); ctx.fillStyle='#344055'; ctx.fillText(s.name, lx+20, ly);
+    lx += Math.min(190, 22 + ctx.measureText(s.name).width + 34); if(lx > W-190){ lx = pad.l+8; ly += 18; }
+  });
+  if(opts.xLabel){ ctx.fillStyle='#687386'; ctx.font='12px system-ui'; ctx.textAlign='center'; ctx.fillText(opts.xLabel, pad.l+plotW/2, H-7); }
+  if(opts.yLabel){ ctx.save(); ctx.translate(15, pad.t+plotH/2); ctx.rotate(-Math.PI/2); ctx.fillStyle='#687386'; ctx.font='12px system-ui'; ctx.textAlign='center'; ctx.fillText(opts.yLabel, 0,0); ctx.restore(); }
+}
+
+function renderReplicateTable(invGroups, massGroups, springGroups){
+  const body = document.querySelector('#replicateTable tbody');
+  if(!body) return;
+  const rows = [];
+  const addRows = (kind, groups) => {
+    groups.filter(g => g.n >= 2).forEach(g => rows.push({kind, g}));
+  };
+  addRows('볼트 위치', invGroups);
+  addRows('질량 조건', massGroups);
+  addRows('스프링 종류', springGroups);
+  if(!rows.length){
+    body.innerHTML = '<tr><td colspan="7" class="tiny">같은 조건을 2회 이상 저장하면 평균과 표준편차가 표시됩니다.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(({kind,g}) => `<tr>
+    <td>${kind}</td>
+    <td>${escapeHtml(g.key)}</td>
+    <td>${g.n}</td>
+    <td>${fmtMeanSd(g.omega1Mean,g.omega1Sd,2)}</td>
+    <td>${fmtMeanSd(g.omega2Mean,g.omega2Sd,2)}</td>
+    <td>${short(g.invMean,2)}</td>
+    <td>${short(g.massMean,4)}</td>
+  </tr>`).join('');
+}
+
+function renderComparisonStore(){
+  const body = document.querySelector('#comparisonTable tbody');
+  if(body){
+    if(!comparisonStore.length){
+      body.innerHTML = '<tr><td colspan="10" class="tiny">아직 저장된 조건이 없습니다.</td></tr>';
+    } else {
+      body.innerHTML = comparisonStore.map((e,idx) => `<tr>
+        <td>${idx+1}</td>
+        <td>${escapeHtml(e.label || '')}</td>
+        <td>${escapeHtml(e.boltLabel || '')}</td>
+        <td>${escapeHtml(e.massLabel || '')}</td>
+        <td>${escapeHtml(e.springType || '')}</td>
+        <td>${short(e.invIEff,2)}</td>
+        <td>${short(e.omega1sq,2)}</td>
+        <td>${short(e.omega2sq,2)}</td>
+        <td>${short(e.beatT,2)}</td>
+        <td>${escapeHtml(e.memo || '')}</td>
+      </tr>`).join('');
+    }
+  }
+
+  const opts = comparisonOptions();
+  const invGroups = getInvGroups();
+  const massGroups = getMassGroups();
+  const springGroups = getSpringGroups();
+  const invEntries = comparisonStore.filter(e => Number.isFinite(e.invIEff) && Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq)).map(e => ({...e, xVal:e.invIEff}));
+  const massEntries = comparisonStore.filter(e => Number.isFinite(e.massX) && Number.isFinite(e.omega1sq) && Number.isFinite(e.omega2sq)).map(e => ({...e, xVal:e.massX}));
+  const springCats = springGroups.map(g => g.key).filter(k => k !== '미입력');
+  $('compCount').textContent = String(comparisonStore.length);
+  $('compInvCount').textContent = String(invEntries.length);
+  $('compMassCount').textContent = String(massEntries.length);
+  $('compSpringCount').textContent = String(springCats.length || springGroups.length);
+
+  const invSeries = opts.aggregate ? [
+    {name:'ω₁² 평균±SD', color:'#2457ff', points:pointsFromGroups(invGroups,'omega1')},
+    {name:'ω₂² 평균±SD', color:'#e87b1e', points:pointsFromGroups(invGroups,'omega2')}
+  ] : [
+    {name:'ω₁²', color:'#2457ff', points:rawPoints(invEntries,'omega1sq')},
+    {name:'ω₂²', color:'#e87b1e', points:rawPoints(invEntries,'omega2sq')}
+  ];
+  drawScatterChart($('invIChart'), invSeries, {xLabel:'1 / I′  또는 1 / I', yLabel:'ω² (rad²/s²)', showLabels:opts.labels, trend:opts.trend, showTrendText:true});
+
+  const massSeries = opts.aggregate ? [
+    {name:'ω₁² 평균±SD', color:'#19a77b', points:pointsFromGroups(massGroups,'omega1')},
+    {name:'ω₂² 평균±SD', color:'#c83232', points:pointsFromGroups(massGroups,'omega2')}
+  ] : [
+    {name:'ω₁²', color:'#19a77b', points:rawPoints(massEntries,'omega1sq')},
+    {name:'ω₂²', color:'#c83232', points:rawPoints(massEntries,'omega2sq')}
+  ];
+  drawScatterChart($('massCompareChart'), massSeries, {xLabel:'질량 m 또는 보정 질량 m′ (kg)', yLabel:'ω² (rad²/s²)', showLabels:opts.labels, trend:opts.trend, showTrendText:true});
+
+  const categories = Array.from(new Set(comparisonStore.map(e => (e.springType || '미입력').trim() || '미입력')));
+  let springSeries;
+  if(opts.aggregate){
+    const mapX = new Map(categories.map((c,i)=>[c,i+1]));
+    springSeries = [
+      {name:'ω₁² 평균±SD', color:'#6b4eff', points:springGroups.map(g => ({x:mapX.get(g.key)-0.08, y:g.omega1Mean, yErr:g.omega1Sd, label:`${g.key}${g.n>1 ? ` (n=${g.n})` : ''}`}))},
+      {name:'ω₂² 평균±SD', color:'#19a77b', points:springGroups.map(g => ({x:mapX.get(g.key)+0.08, y:g.omega2Mean, yErr:g.omega2Sd, label:`${g.key}${g.n>1 ? ` (n=${g.n})` : ''}`}))}
+    ];
+  } else {
+    const counts = {}; categories.forEach(c => counts[c]=0);
+    const s1=[], s2=[];
+    comparisonStore.forEach(e => {
+      const cat = (e.springType || '미입력').trim() || '미입력';
+      const base = categories.indexOf(cat) + 1;
+      const rep = counts[cat]++;
+      const jitter = ((rep % 7) - 3) * 0.035;
+      if(Number.isFinite(e.omega1sq)) s1.push({x:base - 0.08 + jitter, y:e.omega1sq, label:e.label});
+      if(Number.isFinite(e.omega2sq)) s2.push({x:base + 0.08 + jitter, y:e.omega2sq, label:e.label});
+    });
+    springSeries = [{name:'ω₁²', color:'#6b4eff', points:s1},{name:'ω₂²', color:'#19a77b', points:s2}];
+  }
+  drawScatterChart($('springCompareChart'), springSeries, {xTicks: categories.map((c,i)=>({value:i+1,label:c})), xLabel:'스프링 종류', yLabel:'ω² (rad²/s²)', showLabels:opts.labels, trend:false});
+  renderReplicateTable(invGroups, massGroups, springGroups);
+  updateCurrentComparisonInfo();
+}
+
 function rFiniteRatio(arr){
   return arr.length ? arr.filter(Number.isFinite).length / arr.length : 0;
 }
@@ -1474,6 +2155,8 @@ function renderResults(){
   }
   drawChart($('fftChart'), [{name:'병진 가속도 FFT 세기', x:ff, y:pp}], {xMin:0, xMax:fMax*1.15});
   downloadBtn.disabled = false;
+  setSuggestedComparisonFields(false);
+  renderComparisonStore();
 }
 
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -1582,6 +2265,15 @@ drop.addEventListener('drop', e => { const files = e.dataTransfer.files; if(file
 fileInput.addEventListener('change', e => { const files = e.target.files; if(files && files.length) handleFiles(files); });
 analyzeBtn.addEventListener('click', analyze);
 downloadBtn.addEventListener('click', downloadResultCSV);
+$('saveComparisonBtn')?.addEventListener('click', addCurrentResultToComparison);
+$('clearComparisonBtn')?.addEventListener('click', clearComparisonStore);
+$('exportComparisonBtn')?.addEventListener('click', exportComparisonCSV);
+['compConditionName','compBoltLabel','compMassLabel','compSpringType','compMemo'].forEach(id => {
+  const el = $(id); if(el) el.addEventListener('input', updateCurrentComparisonInfo);
+});
+['trendToggle','aggregateToggle','labelToggle'].forEach(id => {
+  const el = $(id); if(el) el.addEventListener('change', renderComparisonStore);
+});
 $('resetBtn').addEventListener('click', () => { location.reload(); });
 ['timeCol','accCol','gyroCol','trimMode','cutStart','cutEnd','rangeStart','rangeEnd','fMin','fMax','smoothWin','maxFftN','massM','momentI','springMass','springI'].forEach(id => {
   const el = $(id);
@@ -1602,7 +2294,10 @@ document.querySelectorAll('.learnTabBtn').forEach(btn => {
   });
 });
 
-window.addEventListener('resize', () => { if(lastResult) renderResults(); });
+loadComparisonStoreLocal();
+renderComparisonStore();
+setSuggestedComparisonFields(false);
+window.addEventListener('resize', () => { if(lastResult) renderResults(); else renderComparisonStore(); });
 </script>
 </body>
 </html>
