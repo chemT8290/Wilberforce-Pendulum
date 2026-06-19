@@ -1,0 +1,1608 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wilberforce Pendulum Motion Analyzer | 캡처 미사용 학습 탭 · phyphox 전용</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root{
+      --bg:#f6f8fb;--panel:#ffffff;--ink:#172033;--muted:#687386;--line:#dfe5ee;
+      --accent:#2457ff;--accent2:#19a77b;--warn:#e87b1e;--danger:#c83232;
+      --soft:#eef3ff;--soft2:#edf9f5;--shadow:0 16px 40px rgba(23,32,51,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#f7f9fd 0%,#eef3fa 100%);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
+    header{padding:38px 22px 24px;text-align:center}
+    header .tag{display:inline-block;background:var(--soft);color:var(--accent);font-weight:700;border-radius:999px;padding:7px 14px;font-size:13px;margin-bottom:13px}
+    h1{margin:0;font-size:clamp(26px,4vw,44px);line-height:1.18;letter-spacing:-.04em}
+    header p{max-width:860px;margin:14px auto 0;color:var(--muted);font-size:16px}
+    main{max-width:1240px;margin:0 auto;padding:0 20px 52px}
+    .grid{display:grid;grid-template-columns:380px 1fr;gap:18px;align-items:start}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}
+    .panel h2{margin:0 0 14px;font-size:20px;letter-spacing:-.02em}
+    .panel h3{margin:22px 0 10px;font-size:16px}
+    .drop{border:2px dashed #aeb9cc;background:#fbfcff;border-radius:16px;padding:24px;text-align:center;transition:.18s ease;cursor:pointer}
+    .drop.drag{border-color:var(--accent);background:var(--soft)}
+    .drop strong{display:block;font-size:17px;margin-bottom:5px}
+    .drop span{color:var(--muted);font-size:13px}
+    input[type=file]{display:none}
+    label{display:block;font-size:13px;font-weight:700;color:#344055;margin:12px 0 6px}
+    select,input[type=number]{width:100%;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 11px;font-size:14px;color:var(--ink)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    button{border:0;border-radius:13px;padding:11px 14px;font-weight:800;cursor:pointer;background:var(--accent);color:white;font-size:14px}
+    button.secondary{background:#e9edf5;color:#263247}
+    button.ghost{background:#fff;color:var(--accent);border:1px solid #cfd8ff}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .note{font-size:13px;color:var(--muted);background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px}
+    .warn{font-size:13px;color:#7a4200;background:#fff7ed;border:1px solid #ffd6aa;border-radius:14px;padding:12px;margin-top:12px;display:none}
+    .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px;box-shadow:0 8px 22px rgba(23,32,51,.05)}
+    .card .name{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.02em;text-transform:uppercase}
+    .card .value{font-size:25px;font-weight:900;margin-top:6px;letter-spacing:-.03em}
+    .card .sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .chartWrap{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:14px}
+    .chartTop{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:8px}
+    .chartTop b{font-size:15px}
+    .chartTop span{font-size:12px;color:var(--muted)}
+    canvas{width:100%;height:320px;display:block}
+    #preview{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px;overflow:hidden;border-radius:12px}
+    #preview th,#preview td{border-bottom:1px solid var(--line);padding:6px 7px;text-align:right;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+    #preview th{text-align:center;background:#f5f7fb;color:#344055}
+    #preview td:first-child,#preview th:first-child{text-align:left}
+    .summary{background:#f7faff;border:1px solid #dbe6ff;border-radius:16px;padding:16px;margin-top:16px;white-space:pre-wrap;font-size:14px}
+    .pill{display:inline-block;background:#eef3ff;color:#2457ff;border-radius:999px;font-size:12px;font-weight:800;padding:4px 9px;margin:0 5px 6px 0}
+    .ok{color:var(--accent2)} .bad{color:var(--danger)}
+    footer{max-width:1240px;margin:0 auto 42px;padding:0 20px;color:var(--muted);font-size:12px;text-align:center}
+
+    .learnTabs{margin:6px 0 18px;background:#fbfcff;border:1px solid var(--line);border-radius:18px;padding:14px}
+    .learnTabButtons{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .learnTabBtn{background:#eef3ff;color:#2457ff;border:1px solid #d4ddff;border-radius:999px;padding:9px 12px;font-size:13px;font-weight:900}
+    .learnTabBtn.active{background:#2457ff;color:#fff;border-color:#2457ff}
+    .learnPanel{display:none;animation:fadeIn .16s ease}
+    .learnPanel.active{display:block}
+    @keyframes fadeIn{from{opacity:.45;transform:translateY(2px)}to{opacity:1;transform:none}}
+    .learnLead{background:#f7faff;border:1px solid #dbe6ff;border-radius:16px;padding:14px;margin:10px 0 14px;font-size:14px;color:#263247}
+    .learnGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+    .learnCard{border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px}
+    .learnCard h3{margin:0 0 8px;font-size:16px}
+    .learnCard p{margin:7px 0;color:#3d485c;font-size:14px}
+    .learnCard ul,.learnCard ol{margin:8px 0 0 20px;padding:0;color:#3d485c;font-size:14px}
+    .learnCard li{margin:5px 0}
+    .imageCard{border:1px solid var(--line);background:#fff;border-radius:16px;overflow:hidden}
+    .imageCard img{width:100%;display:block;background:#eef3fa}
+    .imageCard .cap{padding:10px 12px;font-size:13px;color:#4a5568;border-top:1px solid var(--line);background:#fbfcff}
+    .formulaBox{background:#f9fbff;border:1px solid #dbe6ff;border-radius:15px;padding:12px;margin:10px 0;font-family:"Cambria Math","Times New Roman",serif;font-size:17px;line-height:1.7;overflow:auto}
+    .varTable{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:14px;border:1px solid var(--line);font-size:13px;margin-top:10px}
+    .varTable th,.varTable td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}
+    .varTable tr:last-child th,.varTable tr:last-child td{border-bottom:0}
+    .varTable th{background:#f5f7fb;color:#263247;width:132px}
+    .tagMini{display:inline-block;border-radius:999px;background:#edf9f5;color:#0c7a5d;padding:3px 8px;font-size:12px;font-weight:900;margin:2px 4px 2px 0}
+    .warningSoft{background:#fff7ed;border:1px solid #ffd6aa;color:#76400b;border-radius:15px;padding:12px;font-size:13px;margin-top:10px}
+    .checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .checkItem{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;color:#344055}
+
+    .diagramCard{border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;overflow:hidden}
+    .diagramCard h3{margin:0 0 8px;font-size:16px}
+    .diagramCard p{margin:7px 0;color:#3d485c;font-size:14px}
+    .svgDiagram{width:100%;height:auto;display:block;background:linear-gradient(180deg,#fbfdff,#f5f8fc);border:1px solid #e4ebf5;border-radius:14px}
+    .caption{font-size:13px;color:#4a5568;background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-top:8px}
+    .formulaGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+    .formulaNote{font-size:13px;color:#4a5568;background:#fbfcff;border:1px dashed #cfd8ea;border-radius:12px;padding:10px;margin-top:8px}
+    .miniEq{font-family:"Cambria Math","Times New Roman",serif;background:#f9fbff;border:1px solid #dbe6ff;border-radius:12px;padding:10px;font-size:16px;line-height:1.7}
+    .koreanMeaning{background:#f7fbf8;border:1px solid #d8efe5;border-radius:12px;padding:10px;color:#264b3e;font-size:13px;margin-top:8px}
+    .stepFlow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+    .stepFlow div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;font-size:13px;color:#344055;font-weight:800}
+    .arrowTxt{color:#2457ff;font-weight:900}
+    @media(max-width:900px){.formulaGrid,.stepFlow{grid-template-columns:1fr}.stepFlow div{text-align:left}}
+
+    @media(max-width:720px){.learnGrid,.checklist{grid-template-columns:1fr}.learnTabButtons{gap:6px}.learnTabBtn{font-size:12px;padding:8px 10px}}
+
+    @media(max-width:980px){.grid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.cards{grid-template-columns:1fr}header{padding-top:26px}.panel{padding:16px}canvas{height:260px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="tag">phyphox 전용 분석 · 캡처 미사용 학습 탭 · 스프링 질량/관성 보정</div>
+    <h1>윌버포스 진자 phyphox 전용 결과 분석·학습 웹앱</h1>
+    <p>스마트폰 가속도계와 자이로스코프 자료를 업로드하면 보정 가속도, 각가속도, 진동 주기, 감쇠, 위상 관계, 에너지 교환, 정상모드 주파수, 맥놀이 주기를 자동 계산합니다. 추가로 스프링 자체의 질량과 관성모멘트를 무시하지 않는 보정 모델을 반영하여, 측정된 정상모드 주파수를 각진동수 ω와 ω²로 환산하고 1/I′ 기준 비교값까지 정리합니다. 이론 구조는 나선형 용수철의 병진-회전 결합, 선형화, 정상모드, 맥놀이 해석을 따르되, 실제 측정·분석 방법은 카메라 트래킹이 아니라 phyphox 센서 데이터 분석으로 통일했습니다. 단일 통합 파일 또는 phyphox의 Accelerometer.csv와 Gyroscope.csv 2개 파일을 동시에 업로드할 수 있습니다. 모든 처리는 브라우저 안에서만 실행됩니다.</p>
+  </header>
+
+  <main class="grid">
+    <section class="panel">
+      <h2>1. 데이터 업로드</h2>
+      <div id="drop" class="drop">
+        <strong>파일을 여기에 놓거나 클릭</strong>
+        <span>통합 파일 1개 또는 Accelerometer.csv + Gyroscope.csv 2개를 동시에 업로드</span>
+      </div>
+      <input id="fileInput" type="file" accept=".csv,.txt,.tsv,.xlsx,.xls" multiple />
+      <div id="fileInfo" class="note">아직 파일이 업로드되지 않았습니다. 단일 파일 1개 또는 Accelerometer.csv와 Gyroscope.csv 2개를 함께 선택할 수 있습니다.</div>
+      <div id="xlsxWarn" class="warn">엑셀 파일을 읽으려면 인터넷 연결이 필요할 수 있습니다. 읽히지 않으면 phyphox에서 CSV로 다시 내보내 주세요.</div>
+
+      <h2 style="margin-top:22px">2. 분석 열 선택</h2>
+      <label for="timeCol">시간 열</label>
+      <select id="timeCol"></select>
+      <label for="accCol">병진 가속도 열</label>
+      <select id="accCol"></select>
+      <label for="gyroCol">회전 각속도 열</label>
+      <select id="gyroCol"></select>
+
+      <h2 style="margin-top:22px">3. 분석 구간 설정</h2>
+      <label for="trimMode">시작/끝 방해 구간 제외 모드</label>
+      <select id="trimMode">
+        <option value="full">전체 자료 분석</option>
+        <option value="cut">앞/뒤에서 지정한 초만큼 제외</option>
+        <option value="range">분석 시작·끝 시간 직접 지정</option>
+      </select>
+      <div id="rangeInfo" class="note">파일을 업로드하면 전체 시간 범위가 표시됩니다.</div>
+      <div class="row">
+        <div>
+          <label for="cutStart">처음 제외 시간(s)</label>
+          <input id="cutStart" type="number" value="2" step="0.1" min="0" />
+        </div>
+        <div>
+          <label for="cutEnd">끝 제외 시간(s)</label>
+          <input id="cutEnd" type="number" value="2" step="0.1" min="0" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="rangeStart">분석 시작 시간(s)</label>
+          <input id="rangeStart" type="number" value="" step="0.1" min="0" placeholder="예: 3.0" />
+        </div>
+        <div>
+          <label for="rangeEnd">분석 끝 시간(s)</label>
+          <input id="rangeEnd" type="number" value="" step="0.1" min="0" placeholder="예: 55.0" />
+        </div>
+      </div>
+      <div class="note">
+        시작 버튼을 누를 때 생기는 충격, 측정 종료 직전 스마트폰을 만지며 생기는 불규칙 운동을 제외하려면 <b>앞/뒤에서 지정한 초만큼 제외</b>를 선택하세요. 시간은 원자료의 첫 시점을 0초로 환산한 값입니다.
+      </div>
+
+      <h2 style="margin-top:22px">4. 분석 옵션</h2>
+      <div class="row">
+        <div>
+          <label for="fMin">FFT 최소 주파수(Hz)</label>
+          <input id="fMin" type="number" value="0.05" step="0.01" min="0" />
+        </div>
+        <div>
+          <label for="fMax">FFT 최대 주파수(Hz)</label>
+          <input id="fMax" type="number" value="2.0" step="0.1" min="0.1" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="smoothWin">각속도 평활 창</label>
+          <input id="smoothWin" type="number" value="5" step="2" min="1" />
+        </div>
+        <div>
+          <label for="maxFftN">FFT 최대 자료 수</label>
+          <input id="maxFftN" type="number" value="4096" step="1024" min="512" />
+        </div>
+      </div>
+
+      <h2 style="margin-top:22px">5. 스프링 질량·관성 보정</h2>
+      <div class="note">
+        올려주신 발표 자료의 핵심 보정은 스프링 자체도 함께 움직이므로 유효 질량과 유효 관성모멘트를 <b>m′ = m + m<sub>s</sub>/3</b>, <b>I′ = I + I<sub>s</sub>/3</b>로 두는 것입니다. 값을 입력하면 측정된 정상모드 주파수를 ω, ω², 1/I′ 기준으로 정리해 여러 조건 비교에 사용할 수 있습니다. 비워 두면 센서 데이터 기반 분석만 수행합니다.
+      </div>
+      <div class="row">
+        <div>
+          <label for="massM">진동자 질량 m (kg)</label>
+          <input id="massM" type="number" value="" step="0.001" min="0" placeholder="예: 0.302" />
+        </div>
+        <div>
+          <label for="momentI">진동자 관성모멘트 I (kg·m²)</label>
+          <input id="momentI" type="number" value="" step="0.000001" min="0" placeholder="예: 0.0012" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="springMass">스프링 질량 mₛ (kg)</label>
+          <input id="springMass" type="number" value="" step="0.0001" min="0" placeholder="예: 0.0221" />
+        </div>
+        <div>
+          <label for="springI">스프링 관성모멘트 Iₛ (kg·m²)</label>
+          <input id="springI" type="number" value="" step="0.0000001" min="0" placeholder="예: 0.000024" />
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="analyzeBtn" disabled>자동 분석</button>
+        <button id="downloadBtn" class="secondary" disabled>결과 CSV 저장</button>
+        <button id="resetBtn" class="ghost">초기화</button>
+      </div>
+
+      <div class="note">
+        <b>권장 phyphox 설정</b><br>
+        통합 파일은 Acceleration without g 또는 Linear acceleration + Gyroscope를 권장합니다. phyphox가 Accelerometer.csv와 Gyroscope.csv를 따로 저장한 경우 두 파일을 한 번에 선택하면 시간축을 기준으로 자동 결합합니다. 축 방향이 불확실하면 업로드 후 그래프 진폭이 가장 큰 축을 선택하면 됩니다.<br><br>
+        <b>이 버전의 분석 원칙</b><br>
+        첨부 영상에 나온 카메라 추적, 거울 반사 추적, 장노출 사진 분석은 사용하지 않습니다. 이론과 결과 해석의 구조만 참고하고, 실제 수치 분석은 스마트폰 가속도계와 자이로스코프 데이터만 사용합니다.
+      </div>
+
+      <h3>데이터 미리보기</h3>
+      <div style="overflow:auto;max-height:220px;border:1px solid var(--line);border-radius:12px">
+        <table id="preview"></table>
+      </div>
+    </section>
+
+    <section>
+      <div class="cards">
+        <div class="card"><div class="name">자료 수</div><div id="nVal" class="value">-</div><div class="sub">분석에 사용한 행</div></div>
+        <div class="card"><div class="name">평균 시간 간격</div><div id="dtVal" class="value">-</div><div class="sub">Δt, s</div></div>
+        <div class="card"><div class="name">병진 진동 주기</div><div id="periodVal" class="value">-</div><div class="sub">피크 간격 기준</div></div>
+        <div class="card"><div class="name">정상모드 주파수</div><div id="modeVal" class="value">-</div><div class="sub">f₁, f₂</div></div>
+        <div class="card"><div class="name">맥놀이 주기</div><div id="beatVal" class="value">-</div><div class="sub">Tᵦ = 1/|f₂-f₁|</div></div>
+        <div class="card"><div class="name">감쇠 시간상수</div><div id="dampingVal" class="value">-</div><div class="sub">피크 감소 근사</div></div>
+        <div class="card"><div class="name">위상 관계</div><div id="phaseVal" class="value">-</div><div class="sub">병진-회전 비교</div></div>
+        <div class="card"><div class="name">에너지 교환</div><div id="couplingVal" class="value">-</div><div class="sub">포락선 상관 기준</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>5. 학생 학습 탭: 변인·설계·이론</h2>
+
+        <div class="learnTabs" id="studentLearningTabs">
+          <div class="learnTabButtons" role="tablist" aria-label="윌버포스 진자 학습 탭">
+            <button class="learnTabBtn active" type="button" data-learn-tab="design">실험 설계</button>
+            <button class="learnTabBtn" type="button" data-learn-tab="variables">변인 설정</button>
+            <button class="learnTabBtn" type="button" data-learn-tab="theory">관련 이론</button>
+            <button class="learnTabBtn" type="button" data-learn-tab="interpretation">결과 해석</button>
+            <button class="learnTabBtn" type="button" data-learn-tab="report">보고서 정리</button>
+          </div>
+
+          
+          <div class="learnPanel active" id="learn-design">
+            <div class="learnLead"><b>학습 목표</b> — 유튜브 발표의 핵심 아이디어를 <b>캡처 화면 없이</b> 다시 정리했습니다. 실제 분석은 카메라 추적이 아니라 <b>phyphox의 가속도계와 자이로스코프 자료</b>만 사용합니다.</div>
+            <div class="learnGrid">
+              <div class="diagramCard">
+                <h3>장치 구조를 새 그림으로 이해하기</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 430" role="img" aria-label="윌버포스 진자 장치 구조 그림">
+                  <defs>
+                    <marker id="arr1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#2457ff"/></marker>
+                    <linearGradient id="springGrad" x1="0" x2="1"><stop offset="0" stop-color="#111827"/><stop offset="1" stop-color="#36506f"/></linearGradient>
+                  </defs>
+                  <rect x="30" y="34" width="270" height="24" rx="4" fill="#d9e2ee" stroke="#8a97aa"/>
+                  <g stroke="#8a97aa" stroke-width="2"><line x1="45" y1="34" x2="69" y2="58"/><line x1="85" y1="34" x2="109" y2="58"/><line x1="125" y1="34" x2="149" y2="58"/><line x1="165" y1="34" x2="189" y2="58"/><line x1="205" y1="34" x2="229" y2="58"/><line x1="245" y1="34" x2="269" y2="58"/></g>
+                  <path d="M165 58 C96 76 240 98 165 122 C90 146 240 168 165 192 C90 216 240 238 165 262 C93 285 230 305 165 328" fill="none" stroke="url(#springGrad)" stroke-width="12" stroke-linecap="round"/>
+                  <ellipse cx="165" cy="342" rx="52" ry="15" fill="#f2f4f8" stroke="#4b5563"/>
+                  <rect x="113" y="342" width="104" height="70" fill="#e5e7eb" stroke="#4b5563"/>
+                  <ellipse cx="165" cy="412" rx="52" ry="15" fill="#d9dde5" stroke="#4b5563"/>
+                  <line x1="40" y1="374" x2="290" y2="374" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+                  <circle cx="65" cy="374" r="10" fill="#cbd5e1" stroke="#334155"/><circle cx="265" cy="374" r="10" fill="#cbd5e1" stroke="#334155"/>
+                  <rect x="126" y="386" width="78" height="22" rx="5" fill="#111827" opacity=".83"/><text x="165" y="401" text-anchor="middle" font-size="13" fill="white">smartphone</text>
+                  <path d="M244 349 C282 344 304 360 304 376 C304 392 282 408 244 403" fill="none" stroke="#ef4444" stroke-width="4" marker-end="url(#arr1)"/>
+                  <text x="312" y="381" font-size="15" fill="#ef4444">회전 θ</text>
+                  <line x1="95" y1="280" x2="95" y2="360" stroke="#2457ff" stroke-width="4" marker-end="url(#arr1)"/><text x="45" y="323" font-size="15" fill="#2457ff">병진 z</text>
+                  <rect x="350" y="61" width="220" height="48" rx="10" fill="#ffffff" stroke="#cbd5e1"/><text x="460" y="91" text-anchor="middle" font-size="18" fill="#172033">천장 고정</text>
+                  <rect x="350" y="150" width="220" height="48" rx="10" fill="#e8f6ef" stroke="#19a77b" stroke-width="3"/><text x="460" y="180" text-anchor="middle" font-size="18" fill="#172033">나선형 용수철</text>
+                  <rect x="350" y="240" width="220" height="74" rx="10" fill="#ffffff" stroke="#cbd5e1"/><text x="460" y="269" text-anchor="middle" font-size="17" fill="#172033">관성모멘트 조절 질량부</text><text x="460" y="294" text-anchor="middle" font-size="14" fill="#687386">볼트 위치로 I′ 조절</text>
+                  <rect x="350" y="350" width="220" height="48" rx="10" fill="#eef3ff" stroke="#a9b9ff"/><text x="460" y="380" text-anchor="middle" font-size="16" fill="#172033">phyphox 센서 측정</text>
+                </svg>
+                <div class="caption">위아래 운동은 가속도계, 비틀림 운동은 자이로스코프로 측정합니다. 카메라·거울·장노출 사진은 사용하지 않습니다.</div>
+              </div>
+              <div class="learnCard">
+                <h3>탐구 문제 예시</h3>
+                <p><b>볼트 위치를 바꾸어 회전 관성 I′를 변화시키면 정상모드 주파수와 맥놀이 주기는 어떻게 달라지는가?</b></p>
+                <ul>
+                  <li>볼트가 바깥쪽으로 이동하면 회전 관성 I′가 증가합니다.</li>
+                  <li>I′가 증가하면 회전 운동은 더 천천히 변하려는 경향이 커집니다.</li>
+                  <li>두 정상모드 주파수 차이 Δf가 작아지거나 커지면 맥놀이 주기 T<sub>B</sub>도 함께 달라집니다.</li>
+                </ul>
+                <div class="koreanMeaning"><b>한글로 풀어 쓰면</b> — 질량부가 “돌기 쉬운 상태”인지 “돌기 어려운 상태”인지 바꾸고, 그에 따라 위아래 운동과 회전 운동이 에너지를 주고받는 속도를 비교하는 실험입니다.</div>
+              </div>
+              <div class="diagramCard">
+                <h3>phyphox 기반 실험 흐름</h3>
+                <div class="stepFlow">
+                  <div>① 장치 제작</div>
+                  <div>② 센서 기록</div>
+                  <div>③ 앞뒤 구간 제외</div>
+                  <div>④ 그래프·FFT 분석</div>
+                  <div>⑤ 정상모드·맥놀이 해석</div>
+                </div>
+                <svg class="svgDiagram" viewBox="0 0 620 220" style="margin-top:10px" aria-label="실험 흐름 그래프">
+                  <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#2457ff"/></marker></defs>
+                  <g fill="#ffffff" stroke="#cbd5e1" stroke-width="2">
+                    <rect x="35" y="52" width="105" height="62" rx="14"/><rect x="160" y="52" width="105" height="62" rx="14"/><rect x="285" y="52" width="105" height="62" rx="14"/><rect x="410" y="52" width="105" height="62" rx="14"/>
+                  </g>
+                  <text x="87" y="87" text-anchor="middle" font-size="16">진자 방출</text><text x="212" y="79" text-anchor="middle" font-size="15">가속도계</text><text x="212" y="99" text-anchor="middle" font-size="15">자이로스코프</text><text x="337" y="79" text-anchor="middle" font-size="15">웹앱</text><text x="337" y="99" text-anchor="middle" font-size="15">자동 계산</text><text x="462" y="79" text-anchor="middle" font-size="15">보고서</text><text x="462" y="99" text-anchor="middle" font-size="15">해석 문장</text>
+                  <g stroke="#2457ff" stroke-width="3" marker-end="url(#arr2)"><line x1="142" y1="83" x2="156" y2="83"/><line x1="267" y1="83" x2="281" y2="83"/><line x1="392" y1="83" x2="406" y2="83"/></g>
+                  <path d="M60 168 C95 126 125 205 160 166 C195 128 225 205 260 166 C295 128 325 205 360 166 C395 128 425 205 460 166 C495 128 525 205 560 166" fill="none" stroke="#19a77b" stroke-width="4"/>
+                  <text x="310" y="202" text-anchor="middle" font-size="14" fill="#4a5568">시간 그래프에서 진폭 변화와 맥놀이를 확인</text>
+                </svg>
+              </div>
+              <div class="learnCard">
+                <h3>권장 실험 절차</h3>
+                <ol>
+                  <li>스마트폰을 질량부에 단단히 고정하고 축 방향을 확인합니다.</li>
+                  <li>phyphox에서 가속도계와 자이로스코프를 동시에 기록합니다.</li>
+                  <li>자료를 CSV로 저장합니다. 파일이 나뉘면 Accelerometer.csv와 Gyroscope.csv를 함께 업로드합니다.</li>
+                  <li>시작·종료 버튼 조작으로 흔들린 구간은 웹앱에서 제외합니다.</li>
+                  <li>같은 조건을 3회 이상 반복하고, 볼트 위치 조건을 바꾸어 비교합니다.</li>
+                </ol>
+                <div class="warningSoft"><b>안전한 방출 방식</b> — 실을 태워 놓는 방법은 학교 실험에서 쓰지 않습니다. 손으로 조심스럽게 놓고, 시작 구간을 제외하는 방식으로 충분히 분석 가능합니다.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="learnPanel" id="learn-variables">
+            <div class="learnLead"><b>변인 통제의 핵심</b> — 윌버포스 진자는 요인이 많습니다. 한 번에 하나의 변인만 바꾸어야 결과 해석이 선명해집니다.</div>
+            <table class="varTable">
+              <tr><th>조작 변인</th><td><b>우선 추천:</b> 볼트·너트의 위치에 따른 회전 관성 I′. 추가 탐구에서는 추 질량 m, 용수철 종류, 초기 조건을 바꿀 수 있습니다.</td></tr>
+              <tr><th>종속 변인</th><td>정상모드 주파수 f₁, f₂ / 각진동수 제곱 ω₁², ω₂² / 맥놀이 주기 T<sub>B</sub> / 포락선 교대 양상 / 감쇠 시간상수</td></tr>
+              <tr><th>통제 변인</th><td>같은 용수철, 같은 스마트폰 위치, 같은 측정 시간, 같은 분석 구간 제외 기준, 같은 초기 당김 거리, 같은 샘플링 조건, 같은 축 선택 기준</td></tr>
+              <tr><th>반복 측정</th><td>조건별 3회 이상 측정해 평균과 표준편차를 구합니다. FFT 피크가 불안정하면 시작·끝 제외 시간을 늘리고 분석 구간을 규칙적인 부분으로 제한합니다.</td></tr>
+            </table>
+            <div class="learnGrid">
+              <div class="diagramCard">
+                <h3>볼트 위치와 회전 관성</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 300" aria-label="볼트 위치 변화에 따른 회전 관성 비교">
+                  <g transform="translate(0,10)">
+                    <text x="35" y="35" font-size="16" font-weight="700">조건 A: 볼트 안쪽</text>
+                    <line x1="155" y1="85" x2="465" y2="85" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+                    <rect x="280" y="55" width="60" height="60" rx="12" fill="#e5e7eb" stroke="#4b5563"/><circle cx="225" cy="85" r="12" fill="#94a3b8"/><circle cx="395" cy="85" r="12" fill="#94a3b8"/>
+                    <text x="310" y="135" text-anchor="middle" font-size="14" fill="#4a5568">I′ 작음 → 회전이 비교적 쉬움</text>
+                  </g>
+                  <g transform="translate(0,150)">
+                    <text x="35" y="35" font-size="16" font-weight="700">조건 B: 볼트 바깥쪽</text>
+                    <line x1="155" y1="85" x2="465" y2="85" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+                    <rect x="280" y="55" width="60" height="60" rx="12" fill="#e5e7eb" stroke="#4b5563"/><circle cx="170" cy="85" r="12" fill="#f97316"/><circle cx="450" cy="85" r="12" fill="#f97316"/>
+                    <text x="310" y="135" text-anchor="middle" font-size="14" fill="#4a5568">I′ 큼 → 회전이 더 어려움</text>
+                  </g>
+                </svg>
+                <div class="caption">같은 질량이라도 회전축에서 멀어질수록 관성모멘트가 커집니다. 따라서 볼트 위치는 가장 다루기 쉬운 조작 변인입니다.</div>
+              </div>
+              <div class="diagramCard">
+                <h3>여러 조건 비교 그래프 예시</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 300" aria-label="1/I와 각진동수 제곱 관계 그래프">
+                  <rect x="72" y="35" width="500" height="210" fill="#ffffff" stroke="#dbe3ef"/>
+                  <g stroke="#edf2f7"><line x1="72" y1="200" x2="572" y2="200"/><line x1="72" y1="155" x2="572" y2="155"/><line x1="72" y1="110" x2="572" y2="110"/><line x1="72" y1="65" x2="572" y2="65"/></g>
+                  <line x1="72" y1="245" x2="572" y2="245" stroke="#334155" stroke-width="2"/><line x1="72" y1="245" x2="72" y2="35" stroke="#334155" stroke-width="2"/>
+                  <text x="322" y="282" text-anchor="middle" font-size="15">1/I′  (유효 관성모멘트의 역수)</text>
+                  <text x="20" y="142" transform="rotate(-90 20 142)" text-anchor="middle" font-size="15">ω²</text>
+                  <polyline points="95,208 185,184 275,160 365,132 455,104 545,78" fill="none" stroke="#19a77b" stroke-width="4"/>
+                  <polyline points="95,225 185,205 275,188 365,174 455,162 545,155" fill="none" stroke="#2457ff" stroke-width="4"/>
+                  <g fill="#19a77b"><circle cx="95" cy="208" r="6"/><circle cx="185" cy="184" r="6"/><circle cx="275" cy="160" r="6"/><circle cx="365" cy="132" r="6"/><circle cx="455" cy="104" r="6"/><circle cx="545" cy="78" r="6"/></g>
+                  <g fill="#2457ff"><circle cx="95" cy="225" r="6"/><circle cx="185" cy="205" r="6"/><circle cx="275" cy="188" r="6"/><circle cx="365" cy="174" r="6"/><circle cx="455" cy="162" r="6"/><circle cx="545" cy="155" r="6"/></g>
+                  <rect x="395" y="50" width="145" height="48" rx="8" fill="#fff" stroke="#dbe3ef"/><circle cx="412" cy="68" r="5" fill="#19a77b"/><text x="425" y="73" font-size="13">높은 정상모드</text><circle cx="412" cy="88" r="5" fill="#2457ff"/><text x="425" y="93" font-size="13">낮은 정상모드</text>
+                </svg>
+                <div class="caption">x축을 I′가 아니라 1/I′로 두면 회전 관성이 커질수록 그래프의 오른쪽·왼쪽 변화 방향을 더 쉽게 비교할 수 있습니다.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="learnPanel" id="learn-theory">
+            <div class="learnLead"><b>관련 이론의 큰 흐름</b> — 나선형 용수철은 늘어남과 비틀림이 완전히 독립적이지 않습니다. 이 결합 때문에 정상모드와 맥놀이가 나타납니다.</div>
+            <div class="learnGrid">
+              <div class="diagramCard">
+                <h3>평형 상태와 작은 진동</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 330" aria-label="힘과 토크 평형 그림">
+                  <defs><marker id="arr3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="currentColor"/></marker></defs>
+                  <path d="M180 30 C115 48 245 70 180 96 C115 122 245 145 180 171 C115 197 245 220 180 246" fill="none" stroke="#111827" stroke-width="10" stroke-linecap="round"/>
+                  <rect x="135" y="246" width="90" height="58" rx="12" fill="#e5e7eb" stroke="#4b5563"/>
+                  <line x1="80" y1="270" x2="280" y2="270" stroke="#334155" stroke-width="6"/>
+                  <line x1="180" y1="248" x2="180" y2="155" stroke="#19a77b" stroke-width="5" marker-end="url(#arr3)" style="color:#19a77b"/><text x="197" y="193" font-size="17" fill="#19a77b">용수철 힘 Fₛ</text>
+                  <line x1="180" y1="304" x2="180" y2="325" stroke="#ef4444" stroke-width="5" marker-end="url(#arr3)" style="color:#ef4444"/><text x="198" y="322" font-size="17" fill="#ef4444">중력 Fg</text>
+                  <path d="M110 250 C135 225 225 225 250 250" fill="none" stroke="#f97316" stroke-width="5"/><text x="268" y="246" font-size="17" fill="#f97316">토크 Γ</text>
+                  <rect x="340" y="70" width="230" height="78" rx="14" fill="#ffffff" stroke="#cbd5e1"/><text x="455" y="102" text-anchor="middle" font-size="17" font-weight="700">평형점</text><text x="455" y="130" text-anchor="middle" font-size="16">Fₛ + Fg = 0, Γₛ ≈ 0</text>
+                  <rect x="340" y="185" width="230" height="82" rx="14" fill="#f7faff" stroke="#dbe6ff"/><text x="455" y="217" text-anchor="middle" font-size="17" font-weight="700">분석 기준</text><text x="455" y="245" text-anchor="middle" font-size="15">평형점에서 조금 벗어난 z, θ만 분석</text>
+                </svg>
+                <div class="caption">정지해 있을 때의 길이와 각도를 기준점으로 잡고, 그 주변의 작은 흔들림을 분석합니다.</div>
+              </div>
+              <div class="learnCard">
+                <h3>핵심 수식 정리</h3>
+                <div class="formulaGrid">
+                  <div class="miniEq">m′ = m + <sup>1</sup>/<sub>3</sub> m<sub>s</sub><br>I′ = I + <sup>1</sup>/<sub>3</sub> I<sub>s</sub></div>
+                  <div class="miniEq">ω<sub>z</sub> = √(k/m′)<br>ω<sub>θ</sub> = √(κ/I′)</div>
+                </div>
+                <div class="formulaBox">m′ z¨ + b<sub>z</sub> z˙ + k z + εθ = 0<br>I′ θ¨ + b<sub>θ</sub> θ˙ + κθ + εz = 0</div>
+                <div class="koreanMeaning"><b>의미</b> — z식 안에 θ가 들어가고, θ식 안에 z가 들어갑니다. 그래서 위아래 운동과 회전 운동은 따로 움직이지 않고 서로 영향을 줍니다.</div>
+              </div>
+              <div class="diagramCard">
+                <h3>정상모드 2가지</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 330" aria-label="정상모드 같은 위상과 반대 위상">
+                  <rect x="35" y="35" width="260" height="250" rx="16" fill="#fff" stroke="#dbe3ef"/><rect x="325" y="35" width="260" height="250" rx="16" fill="#fff" stroke="#dbe3ef"/>
+                  <text x="165" y="65" text-anchor="middle" font-size="19" font-weight="700">Mode 1</text><text x="455" y="65" text-anchor="middle" font-size="19" font-weight="700">Mode 2</text>
+                  <text x="165" y="95" text-anchor="middle" font-size="15" fill="#19a77b">병진과 회전이 같은 위상</text><text x="455" y="95" text-anchor="middle" font-size="15" fill="#ef4444">병진과 회전이 반대 위상</text>
+                  <polyline points="60,165 80,135 100,165 120,195 140,165 160,135 180,165 200,195 220,165 240,135 260,165" fill="none" stroke="#19a77b" stroke-width="4"/>
+                  <polyline points="60,225 80,195 100,225 120,255 140,225 160,195 180,225 200,255 220,225 240,195 260,225" fill="none" stroke="#2457ff" stroke-width="4"/>
+                  <line x1="160" y1="118" x2="160" y2="268" stroke="#94a3b8" stroke-dasharray="6 6"/>
+                  <polyline points="350,165 370,135 390,165 410,195 430,165 450,135 470,165 490,195 510,165 530,135 550,165" fill="none" stroke="#19a77b" stroke-width="4"/>
+                  <polyline points="350,225 370,255 390,225 410,195 430,225 450,255 470,225 490,195 510,225 530,255 550,225" fill="none" stroke="#2457ff" stroke-width="4"/>
+                  <line x1="450" y1="118" x2="450" y2="268" stroke="#94a3b8" stroke-dasharray="6 6"/>
+                  <text x="62" y="306" font-size="13" fill="#19a77b">초록: 병진</text><text x="155" y="306" font-size="13" fill="#2457ff">파랑: 회전</text>
+                </svg>
+                <div class="caption">정상모드는 결합된 계가 가장 안정적으로 진동하는 고유한 방식입니다. 실제 운동은 두 정상모드가 섞인 결과로 나타납니다.</div>
+              </div>
+              <div class="learnCard">
+                <h3>정상모드 주파수</h3>
+                <div class="formulaBox">ω<sub>1,2</sub><sup>2</sup> = ½ [ω<sub>z</sub><sup>2</sup> + ω<sub>θ</sub><sup>2</sup> ± √{(ω<sub>z</sub><sup>2</sup> − ω<sub>θ</sub><sup>2</sup>)<sup>2</sup> + 4ε<sup>2</sup>/(m′I′)}]</div>
+                <p>복잡해 보이지만 핵심은 간단합니다. <b>병진 고유진동수</b>, <b>회전 고유진동수</b>, <b>결합 세기</b>가 합쳐져 두 개의 정상모드 주파수를 만듭니다.</p>
+                <div class="formulaBox">Δf = |f₂ − f₁|<br>T<sub>B</sub> ≈ 1/Δf</div>
+                <p>두 주파수가 가까울수록 진폭이 천천히 커졌다 작아지는 맥놀이가 잘 보입니다.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="learnPanel" id="learn-interpretation">
+            <div class="learnLead"><b>결과 해석 순서</b> — 시간 그래프에서 운동의 규칙성과 에너지 교환을 보고, FFT 그래프에서 두 정상모드 주파수를 확인합니다.</div>
+            <div class="learnGrid">
+              <div class="diagramCard">
+                <h3>시간 그래프: 에너지 교환</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 330" aria-label="병진과 회전 진폭 교대 그래프">
+                  <rect x="65" y="35" width="500" height="230" fill="#fff" stroke="#dbe3ef"/>
+                  <g stroke="#edf2f7"><line x1="65" y1="92" x2="565" y2="92"/><line x1="65" y1="150" x2="565" y2="150"/><line x1="65" y1="207" x2="565" y2="207"/></g>
+                  <line x1="65" y1="150" x2="565" y2="150" stroke="#cbd5e1"/><line x1="65" y1="265" x2="565" y2="265" stroke="#334155"/><line x1="65" y1="35" x2="65" y2="265" stroke="#334155"/>
+                  <path d="M65 150 C76 73 88 73 99 150 C110 227 122 227 133 150 C144 85 156 85 167 150 C178 214 190 214 201 150 C212 108 224 108 235 150 C246 192 258 192 269 150 C280 86 292 86 303 150 C314 214 326 214 337 150 C348 75 360 75 371 150 C382 225 394 225 405 150 C416 90 428 90 439 150 C450 210 462 210 473 150 C484 105 496 105 507 150 C518 195 530 195 541 150" fill="none" stroke="#19a77b" stroke-width="3"/>
+                  <path d="M65 150 C76 142 88 142 99 150 C110 158 122 158 133 150 C144 101 156 101 167 150 C178 199 190 199 201 150 C212 75 224 75 235 150 C246 225 258 225 269 150 C280 124 292 124 303 150 C314 176 326 176 337 150 C348 140 360 140 371 150 C382 160 394 160 405 150 C416 98 428 98 439 150 C450 202 462 202 473 150 C484 80 496 80 507 150 C518 220 530 220 541 150" fill="none" stroke="#2457ff" stroke-width="3" opacity=".85"/>
+                  <text x="315" y="300" text-anchor="middle" font-size="15">시간 t</text><text x="20" y="150" transform="rotate(-90 20 150)" text-anchor="middle" font-size="15">표준화 진폭</text>
+                  <text x="410" y="60" font-size="13" fill="#19a77b">병진 z</text><text x="410" y="80" font-size="13" fill="#2457ff">회전 θ</text>
+                  <text x="115" y="285" font-size="13" fill="#4a5568">z 큼</text><text x="225" y="285" font-size="13" fill="#4a5568">θ 큼</text><text x="355" y="285" font-size="13" fill="#4a5568">z 큼</text><text x="485" y="285" font-size="13" fill="#4a5568">θ 큼</text>
+                </svg>
+                <div class="caption">병진 진폭이 작아질 때 회전 진폭이 커지면, 두 운동 사이에서 에너지가 이동한다고 해석합니다.</div>
+              </div>
+              <div class="diagramCard">
+                <h3>FFT 그래프: 두 정상모드 찾기</h3>
+                <svg class="svgDiagram" viewBox="0 0 620 330" aria-label="FFT 스펙트럼 두 피크 그래프">
+                  <rect x="70" y="35" width="500" height="230" fill="#fff" stroke="#dbe3ef"/>
+                  <line x1="70" y1="265" x2="570" y2="265" stroke="#334155"/><line x1="70" y1="265" x2="70" y2="35" stroke="#334155"/>
+                  <g stroke="#edf2f7"><line x1="70" y1="215" x2="570" y2="215"/><line x1="70" y1="165" x2="570" y2="165"/><line x1="70" y1="115" x2="570" y2="115"/><line x1="70" y1="65" x2="570" y2="65"/></g>
+                  <path d="M80 258 L110 256 L140 255 L170 252 L200 244 L220 220 L235 90 L250 220 L270 246 L305 252 L335 245 L360 200 L382 122 L404 202 L430 247 L470 254 L530 257 L560 258" fill="none" stroke="#2457ff" stroke-width="4"/>
+                  <circle cx="235" cy="90" r="7" fill="#ef4444"/><circle cx="382" cy="122" r="7" fill="#ef4444"/>
+                  <text x="235" y="78" text-anchor="middle" font-size="15" fill="#ef4444">f₁</text><text x="382" y="110" text-anchor="middle" font-size="15" fill="#ef4444">f₂</text>
+                  <line x1="235" y1="282" x2="382" y2="282" stroke="#f97316" stroke-width="3"/><text x="308" y="304" text-anchor="middle" font-size="14" fill="#f97316">Δf = |f₂ − f₁|</text>
+                  <text x="320" y="300" text-anchor="middle" font-size="15">주파수 f</text><text x="26" y="150" transform="rotate(-90 26 150)" text-anchor="middle" font-size="15">세기</text>
+                </svg>
+                <div class="caption">스펙트럼에서 두 개의 뚜렷한 봉우리를 찾고, 그 차이로 맥놀이 주기를 계산합니다.</div>
+              </div>
+              <div class="learnCard">
+                <h3>그래프별 해석 기준</h3>
+                <ul>
+                  <li><b>시간-가속도</b>: 병진 진동의 주기, 감쇠, 맥놀이를 확인합니다.</li>
+                  <li><b>자이로스코프</b>: 회전 방향 변화와 비틀림 진동을 확인합니다.</li>
+                  <li><b>표준화 겹침</b>: 병진과 회전의 위상 관계를 비교합니다.</li>
+                  <li><b>포락선</b>: 두 진폭이 번갈아 커지는지 확인합니다.</li>
+                  <li><b>FFT</b>: 두 정상모드 주파수 f₁, f₂를 찾습니다.</li>
+                </ul>
+              </div>
+              <div class="learnCard">
+                <h3>오차 원인과 보완</h3>
+                <ul>
+                  <li>스마트폰 조작 구간: 시작·끝 구간 제외</li>
+                  <li>축 정렬 불량: 진폭이 가장 큰 축 선택, 스마트폰 중심 고정</li>
+                  <li>손으로 놓는 과정의 외란: 반복 측정 후 평균 사용</li>
+                  <li>스프링 질량 무시: m′, I′ 보정값 입력</li>
+                  <li>감쇠가 큰 경우: 너무 오래 지난 후반 자료 제외</li>
+                </ul>
+                <div class="formulaNote">FFT 주파수가 Hz로 나오면 ω = 2πf로 바꾸어 ω² 그래프를 만들 수 있습니다.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="learnPanel" id="learn-report">
+            <div class="learnLead"><b>보고서 정리 방향</b> — 영어 발표 자료의 핵심 문장을 학생 보고서에 맞게 한글 개념 문장으로 바꾸어 정리합니다.</div>
+            <div class="learnGrid">
+              <div class="learnCard">
+                <h3>영어 개념의 쉬운 한글 해석</h3>
+                <table class="varTable">
+                  <tr><th>Helical spring</th><td>나선형으로 감긴 용수철. 늘어나면 단순히 길이만 변하는 것이 아니라 비틀림 상태도 함께 변할 수 있다.</td></tr>
+                  <tr><th>Coupling</th><td>두 운동이 서로 영향을 주는 현상. 여기서는 위아래 운동과 회전 운동이 연결되어 있다.</td></tr>
+                  <tr><th>Normal modes</th><td>결합된 진동계가 가지는 고유한 두 가지 진동 방식. 같은 위상과 반대 위상 형태로 구분할 수 있다.</td></tr>
+                  <tr><th>Beat</th><td>두 주파수가 비슷할 때 진폭이 주기적으로 커졌다 작아지는 현상. 에너지 교환의 증거로 볼 수 있다.</td></tr>
+                  <tr><th>Spring momentum</th><td>스프링도 질량이 있으므로 함께 움직인다는 뜻. 그래서 유효 질량과 유효 관성모멘트 보정이 필요하다.</td></tr>
+                </table>
+              </div>
+              <div class="learnCard">
+                <h3>보고서 문장 예시</h3>
+                <p>본 탐구에서는 윌버포스 진자를 병진 운동과 회전 운동이 결합된 2자유도 진동계로 해석하였다. 나선형 용수철의 구조 때문에 용수철이 늘어나는 운동과 비틀리는 운동은 완전히 독립적이지 않으며, 이 결합으로 인해 두 운동 사이의 에너지 교환이 나타난다.</p>
+                <p>실험 분석은 카메라 추적 대신 phyphox 앱의 가속도계와 자이로스코프 자료를 이용하였다. 가속도 자료로 병진 진동을, 자이로스코프 자료로 회전 진동을 확인하고, FFT 분석을 통해 두 정상모드 주파수를 구하였다.</p>
+                <p>두 정상모드 주파수의 차이로부터 맥놀이 주기를 계산하였고, 병진 진폭과 회전 진폭이 번갈아 커지는 포락선 변화를 통해 에너지가 두 운동 사이에서 주기적으로 교환됨을 확인하였다.</p>
+              </div>
+              <div class="learnCard">
+                <h3>체크리스트</h3>
+                <div class="checklist">
+                  <div class="checkItem">탐구 문제와 변인이 명확한가?</div>
+                  <div class="checkItem">Accelerometer.csv와 Gyroscope.csv 분석 방법을 설명했는가?</div>
+                  <div class="checkItem">시작·끝 외란 구간 제외 기준을 적었는가?</div>
+                  <div class="checkItem">f₁, f₂, Δf, T<sub>B</sub> 계산을 제시했는가?</div>
+                  <div class="checkItem">m′, I′ 보정의 필요성을 설명했는가?</div>
+                  <div class="checkItem">오차 원인과 개선 방법을 포함했는가?</div>
+                </div>
+              </div>
+              <div class="learnCard">
+                <h3>결론 문장 틀</h3>
+                <p>결과적으로 윌버포스 진자의 운동은 단순한 상하 진동이 아니라, 병진 운동과 회전 운동이 결합된 복합 진동이다. 두 정상모드 주파수가 가까울 때 맥놀이가 나타나며, 이는 에너지가 병진 운동과 회전 운동 사이에서 주기적으로 이동한다는 것을 보여 준다. 또한 스프링 자체의 질량과 관성모멘트를 고려하면 실제 실험 결과를 더 타당하게 해석할 수 있다.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div id="summary" class="summary">파일을 업로드하고 분석을 실행하면 결과 해석 문장이 생성됩니다.</div>
+
+        <div class="chartWrap">
+          <div class="chartTop"><b>이론 해석 가이드</b><span>보고서의 이론·결과 해석을 강화하기 위한 기준</span></div>
+          <div class="summary" id="theoryGuide">
+■ 이 앱의 분석 범위
+첨부한 발표 영상의 이론 흐름은 참고하지만, 실제 측정·분석은 phyphox 데이터만 사용합니다. 즉, 카메라 트래킹이나 장노출 궤적 분석이 아니라 스마트폰 가속도계로 병진 운동을, 자이로스코프로 비틀림 운동을 정량화합니다.
+
+■ 장치 해석
+윌버포스 진자는 천장 고정점, 나선형 용수철, 회전 관성을 조절할 수 있는 질량부로 구성됩니다. 질량부에 좌우 대칭으로 볼트나 너트를 배치하면 회전 관성 I를 조절할 수 있고, 이 값이 회전 진동수와 맥놀이의 뚜렷함을 바꿉니다.
+
+■ 평형 상태
+정지 상태에서는 용수철의 복원력과 중력이 평형을 이루고, 순토크가 0에 가깝습니다. 실험에서는 이 평형 위치를 기준으로 작은 변위 h 또는 z와 작은 회전각 φ 또는 θ가 생긴다고 보고 분석합니다.
+
+■ 핵심 모델
+나선형 용수철의 에너지는 늘어남과 비틀림을 독립항으로만 나눌 수 없습니다. 병진 변위와 회전각이 함께 들어가는 결합항이 존재하므로 U(z,θ) ≠ U_z(z)+U_θ(θ)로 해석해야 합니다. 이 결합항 때문에 위아래 운동과 회전 운동 사이에 에너지 교환이 일어납니다.
+
+■ 선형화 모델
+실험 진폭이 너무 크지 않다고 가정하면 평형점 주변에서 테일러 전개를 적용해 다음과 같은 선형 결합 진동 방정식으로 정리할 수 있습니다.
+m z¨ + b_z z˙ + k z + c θ = 0
+I θ¨ + b_θ θ˙ + κ θ + c z = 0
+여기서 m은 질량, I는 회전 관성, k는 병진 방향 용수철 상수, κ는 비틀림 상수, c는 병진-회전 결합 세기, b_z와 b_θ는 감쇠 항입니다.
+
+■ 스프링 질량과 관성모멘트 보정
+발표 자료의 중요한 보완점은 스프링을 질량이 없는 이상적인 탄성체로 두지 않는다는 점입니다. 스프링 자체도 늘어나고 비틀리며 함께 운동하므로, 단순한 m과 I 대신 유효 질량 m′=m+mₛ/3, 유효 관성모멘트 I′=I+Iₛ/3을 사용하는 것이 더 적절합니다. 이 보정을 넣으면 이론 주파수가 실제 측정값에 더 가까워지는 방향으로 해석할 수 있습니다.
+
+선형 결합 모델에서 두 정상모드 각진동수는 다음 구조를 가집니다.
+ω₁,₂² = 1/2 [ω_z² + ω_θ² ± √{(ω_z²−ω_θ²)² + 4c²/(m′I′)}]
+ω_z = √(k/m′),  ω_θ = √(κ/I′)
+따라서 볼트 위치를 바꾸어 I′를 변화시키면, x축을 1/I′, y축을 ω₁²와 ω₂²로 두어 발표 자료와 같은 비교 그래프를 만들 수 있습니다. 본 웹앱은 phyphox FFT에서 얻은 f₁, f₂를 ω₁=2πf₁, ω₂=2πf₂로 환산하고, 입력한 I′를 이용해 1/I′ 값을 함께 제공합니다.
+
+■ 정상모드
+두 정상모드는 병진 운동과 회전 운동이 일정한 위상 관계를 유지하는 운동입니다. 한 모드에서는 두 운동이 거의 같은 위상으로, 다른 모드에서는 거의 반대 위상으로 나타날 수 있습니다. 실제 phyphox 데이터에서는 병진 가속도와 회전 각가속도를 표준화해 겹쳐 보며 위상 관계를 판단합니다.
+
+■ 맥놀이
+맥놀이는 두 정상모드가 중첩되어 병진 진폭과 회전 진폭이 번갈아 커지고 작아지는 현상입니다. FFT에서 두 정상모드 주파수 f₁, f₂가 확인되면 Δf=|f₂−f₁|이고, 같은 운동 성분의 큰 진폭이 다시 나타나는 시간은 대략 1/Δf입니다. 병진 운동 에너지가 회전 운동 쪽으로 크게 넘어가는 시간은 대략 1/(2Δf)로 해석할 수 있습니다.
+
+■ 변인 해석
+볼트나 너트를 바깥쪽으로 이동하면 I가 커지고 회전 고유진동수 f_θ가 작아집니다. 병진 고유진동수 f_z와 회전 고유진동수 f_θ가 가까울수록 두 운동 사이의 에너지 교환과 맥놀이가 더 뚜렷해집니다.
+
+■ 그래프 해석 기준
+시간-가속도 그래프는 병진 운동의 주기와 감쇠를, 자이로스코프 그래프는 비틀림 운동을, 두 신호의 포락선 비교는 에너지 교환을, FFT 스펙트럼은 정상모드 주파수를 판단하는 근거로 사용합니다.
+          </div>
+        </div>
+
+        <div class="chartWrap">
+          <div class="chartTop"><b>시간-가속도 그래프</b><span>평균값 제거 후 표시 · 주기·감쇠 분석</span></div>
+          <canvas id="timeChart"></canvas>
+        </div>
+        <div class="chartWrap">
+          <div class="chartTop"><b>병진-회전 위상 비교 그래프</b><span>두 신호를 표준화하여 위상 관계 비교</span></div>
+          <canvas id="phaseChart"></canvas>
+        </div>
+        <div class="chartWrap">
+          <div class="chartTop"><b>진폭 포락선 비교 그래프</b><span>진폭이 번갈아 커지는지 확인</span></div>
+          <canvas id="envelopeChart"></canvas>
+        </div>
+        <div class="chartWrap">
+          <div class="chartTop"><b>각속도 및 각가속도 그래프</b><span>각가속도 = 각속도의 시간 미분</span></div>
+          <canvas id="gyroChart"></canvas>
+        </div>
+        <div class="chartWrap">
+          <div class="chartTop"><b>FFT 주파수 스펙트럼</b><span>Blackman window 적용, DC 성분 제외</span></div>
+          <canvas id="fftChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    만든 목적: 고등학교 물리 탐구에서 윌버포스 진자의 결합 진동, 정상모드, 맥놀이를 phyphox 데이터로 빠르게 분석하기 위한 도구입니다. 첨부 발표의 이론 구조와 스프링 질량·관성모멘트 보정 관점을 반영하되, 실험 분석법은 스마트폰 가속도계와 자이로스코프 기반 phyphox 데이터 처리로 통일했습니다.
+  </footer>
+
+<script>
+'use strict';
+
+let rawRows = [];
+let headers = [];
+let data = [];
+let lastResult = null;
+let uploadSourceMode = 'single';
+let uploadedFileNames = [];
+
+const $ = id => document.getElementById(id);
+const drop = $('drop');
+const fileInput = $('fileInput');
+const analyzeBtn = $('analyzeBtn');
+const downloadBtn = $('downloadBtn');
+
+function numberLike(v){
+  if(v === null || v === undefined) return NaN;
+  if(typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  let s = String(v).trim();
+  if(!s) return NaN;
+  s = s.replace(/\s/g,'');
+  // decimal comma fallback only when no dot and a single comma exists
+  if(!s.includes('.') && (s.match(/,/g)||[]).length === 1) s = s.replace(',','.');
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function detectDelimiter(line){
+  const candidates = ['\t', ',', ';'];
+  let best = ',', max = 0;
+  for(const d of candidates){
+    const c = line.split(d).length;
+    if(c > max){ max = c; best = d; }
+  }
+  return best;
+}
+
+function parseText(text){
+  const lines = text.replace(/\r/g,'').split('\n').filter(l => l.trim().length > 0);
+  if(lines.length < 2) throw new Error('파일에 유효한 행이 부족합니다.');
+
+  let headerIndex = 0;
+  let delim = detectDelimiter(lines[0]);
+
+  for(let i=0;i<Math.min(lines.length,30);i++){
+    const d = detectDelimiter(lines[i]);
+    const parts = lines[i].split(d).map(s=>s.trim());
+    const textScore = parts.filter(p => /time|시간|acc|accel|gyro|gyr|각속도|x|y|z/i.test(p)).length;
+    const numericScore = parts.filter(p => Number.isFinite(numberLike(p))).length;
+    if(parts.length >= 2 && textScore >= 1 && numericScore < parts.length/2){
+      headerIndex = i; delim = d; break;
+    }
+  }
+
+  headers = lines[headerIndex].split(delim).map((h,i)=> h.trim() || `Column ${i+1}`);
+  const rows = [];
+  for(let i=headerIndex+1;i<lines.length;i++){
+    const parts = lines[i].split(delim).map(s=>s.trim());
+    if(parts.length < 2) continue;
+    const row = headers.map((h,idx)=> numberLike(parts[idx]));
+    if(row.filter(Number.isFinite).length >= 2) rows.push(row);
+  }
+  if(rows.length < 10) throw new Error('숫자로 된 데이터 행을 충분히 찾지 못했습니다. CSV 구분 기호나 내보내기 형식을 확인하세요.');
+  return rows;
+}
+
+async function parseFile(file){
+  const ext = file.name.split('.').pop().toLowerCase();
+  $('xlsxWarn').style.display = (ext === 'xlsx' || ext === 'xls') ? 'block' : 'none';
+  if(ext === 'xlsx' || ext === 'xls'){
+    if(typeof XLSX === 'undefined') throw new Error('엑셀 파일 읽기 라이브러리를 불러오지 못했습니다. CSV 형식으로 다시 업로드하세요.');
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:false});
+    if(aoa.length < 2) throw new Error('엑셀 시트에 유효한 데이터가 없습니다.');
+    // find header row
+    let hIdx = 0;
+    for(let i=0;i<Math.min(aoa.length,30);i++){
+      const row = aoa[i] || [];
+      const textScore = row.filter(p => /time|시간|acc|accel|gyro|gyr|각속도|x|y|z/i.test(String(p))).length;
+      const numericScore = row.filter(p => Number.isFinite(numberLike(p))).length;
+      if(row.length >= 2 && textScore >= 1 && numericScore < row.length/2){ hIdx = i; break; }
+    }
+    headers = (aoa[hIdx] || []).map((h,i)=> String(h || `Column ${i+1}`).trim());
+    const rows = [];
+    for(let i=hIdx+1;i<aoa.length;i++){
+      const arr = aoa[i] || [];
+      const row = headers.map((h,idx)=> numberLike(arr[idx]));
+      if(row.filter(Number.isFinite).length >= 2) rows.push(row);
+    }
+    if(rows.length < 10) throw new Error('숫자로 된 데이터 행을 충분히 찾지 못했습니다.');
+    return rows;
+  } else {
+    const text = await file.text();
+    return parseText(text);
+  }
+}
+
+function std(arr){
+  const xs = arr.filter(Number.isFinite);
+  if(xs.length < 2) return 0;
+  const m = xs.reduce((a,b)=>a+b,0)/xs.length;
+  const v = xs.reduce((a,b)=>a+(b-m)*(b-m),0)/(xs.length-1);
+  return Math.sqrt(v);
+}
+
+function mean(arr){
+  const xs = arr.filter(Number.isFinite);
+  return xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : NaN;
+}
+
+function median(arr){
+  const xs = arr.filter(Number.isFinite).sort((a,b)=>a-b);
+  if(!xs.length) return NaN;
+  const mid = Math.floor(xs.length/2);
+  return xs.length % 2 ? xs[mid] : (xs[mid-1]+xs[mid])/2;
+}
+
+function rms(arr){
+  const xs = arr.filter(Number.isFinite);
+  if(!xs.length) return NaN;
+  return Math.sqrt(xs.reduce((a,b)=>a+b*b,0)/xs.length);
+}
+
+function percentile(arr, q){
+  const xs = arr.filter(Number.isFinite).sort((a,b)=>a-b);
+  if(!xs.length) return NaN;
+  const pos = (xs.length-1)*q;
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  if(lo === hi) return xs[lo];
+  return xs[lo] + (xs[hi]-xs[lo])*(pos-lo);
+}
+
+function corr(a,b){
+  const xs=[], ys=[];
+  for(let i=0;i<Math.min(a.length,b.length);i++){
+    if(Number.isFinite(a[i]) && Number.isFinite(b[i])){ xs.push(a[i]); ys.push(b[i]); }
+  }
+  if(xs.length < 3) return NaN;
+  const mx=mean(xs), my=mean(ys);
+  let num=0, dx=0, dy=0;
+  for(let i=0;i<xs.length;i++){
+    const vx=xs[i]-mx, vy=ys[i]-my;
+    num += vx*vy; dx += vx*vx; dy += vy*vy;
+  }
+  return dx && dy ? num/Math.sqrt(dx*dy) : NaN;
+}
+
+function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+function classifyPhase(c){
+  if(!Number.isFinite(c)) return '제한';
+  if(c > 0.55) return '같은 위상';
+  if(c < -0.55) return '반대 위상';
+  if(Math.abs(c) < 0.25) return '위상차 큼';
+  return c > 0 ? '부분 같은 위상' : '부분 반대 위상';
+}
+
+function classifyCoupling(envCorr){
+  if(!Number.isFinite(envCorr)) return '제한';
+  if(envCorr < -0.45) return '뚜렷함';
+  if(envCorr < -0.20) return '약하게 보임';
+  if(envCorr < 0.20) return '불명확';
+  return '동시 감쇠 우세';
+}
+
+function movingRMS(arr, win){
+  win = Math.max(3, Math.floor(win));
+  if(win % 2 === 0) win += 1;
+  const half = Math.floor(win/2);
+  const out = new Array(arr.length).fill(NaN);
+  for(let i=0;i<arr.length;i++){
+    let s=0,n=0;
+    for(let j=i-half;j<=i+half;j++){
+      if(j>=0 && j<arr.length && Number.isFinite(arr[j])){ s += arr[j]*arr[j]; n++; }
+    }
+    out[i] = n ? Math.sqrt(s/n) : NaN;
+  }
+  return out;
+}
+
+function bestLagCorrelation(a,b,maxLag){
+  let best = {lag:0, corr:NaN, abs:-Infinity};
+  for(let lag=-maxLag; lag<=maxLag; lag++){
+    const x=[], y=[];
+    for(let i=0;i<a.length;i++){
+      const j=i+lag;
+      if(j>=0 && j<b.length && Number.isFinite(a[i]) && Number.isFinite(b[j])){ x.push(a[i]); y.push(b[j]); }
+    }
+    const c = corr(x,y);
+    if(Number.isFinite(c) && Math.abs(c) > best.abs) best = {lag, corr:c, abs:Math.abs(c)};
+  }
+  return best;
+}
+
+function wrapPhase(deg){
+  if(!Number.isFinite(deg)) return NaN;
+  let x = ((deg + 180) % 360 + 360) % 360 - 180;
+  return x;
+}
+
+
+function findTimeColumnFor(fileHeaders, fileRows){
+  const lower = fileHeaders.map(h => String(h).toLowerCase());
+  let timeIdx = lower.findIndex(h => /time|시간|^t\b|t\s*\(?s?\)?/.test(h));
+  if(timeIdx >= 0) return timeIdx;
+  let best = 0, bestScore = -Infinity;
+  for(let c=0;c<fileHeaders.length;c++){
+    const vals = fileRows.map(r=>r[c]).filter(Number.isFinite);
+    if(vals.length < fileRows.length * .6) continue;
+    let inc = 0;
+    for(let i=1;i<vals.length;i++) if(vals[i] > vals[i-1]) inc++;
+    const range = vals.length ? vals[vals.length-1]-vals[0] : 0;
+    const score = inc/Math.max(1, vals.length) + (range > 0.5 ? 1 : 0) - std(vals)/100000;
+    if(score > bestScore){ bestScore = score; best = c; }
+  }
+  return best;
+}
+
+function sensorScore(parsed, type){
+  const name = String(parsed.name || '').toLowerCase();
+  const text = (name + ' ' + parsed.headers.join(' ')).toLowerCase();
+  let score = 0;
+  if(type === 'acc'){
+    if(/accelerometer|acceleration|linear acceleration|accel|가속/.test(text)) score += 5;
+    if(/gyro|gyroscope|gyr|angular velocity|각속|rotation/.test(text)) score -= 3;
+  } else {
+    if(/gyro|gyroscope|gyr|angular velocity|각속|rotation/.test(text)) score += 5;
+    if(/accelerometer|acceleration|accel|가속/.test(text)) score -= 2;
+  }
+  return score;
+}
+
+function numericColumnIndices(fileRows, timeIdx){
+  const nCols = fileRows[0]?.length || 0;
+  const cols = [];
+  for(let c=0;c<nCols;c++){
+    if(c === timeIdx) continue;
+    const ratio = fileRows.map(r=>r[c]).filter(Number.isFinite).length / Math.max(1,fileRows.length);
+    if(ratio > 0.55) cols.push(c);
+  }
+  return cols;
+}
+
+function interpolateSeries(srcT, srcY, x, startIndexObj){
+  if(srcT.length < 2) return NaN;
+  let j = startIndexObj.j || 0;
+  while(j < srcT.length-2 && srcT[j+1] < x) j++;
+  startIndexObj.j = j;
+  if(x < srcT[0] || x > srcT[srcT.length-1]) return NaN;
+  const t1 = srcT[j], t2 = srcT[j+1];
+  const y1 = srcY[j], y2 = srcY[j+1];
+  if(!Number.isFinite(t1) || !Number.isFinite(t2) || !Number.isFinite(y1) || !Number.isFinite(y2) || t2 === t1) return NaN;
+  return y1 + (y2-y1)*(x-t1)/(t2-t1);
+}
+
+function combineSplitSensorFiles(parsedFiles){
+  if(parsedFiles.length < 2) throw new Error('2파일 결합에는 Accelerometer.csv와 Gyroscope.csv가 모두 필요합니다.');
+  let accFile = parsedFiles.slice().sort((a,b)=>sensorScore(b,'acc')-sensorScore(a,'acc'))[0];
+  let gyroFile = parsedFiles.slice().sort((a,b)=>sensorScore(b,'gyro')-sensorScore(a,'gyro'))[0];
+  if(accFile === gyroFile){
+    // fallback: use file order when automatic classification is ambiguous
+    accFile = parsedFiles[0];
+    gyroFile = parsedFiles[1];
+  }
+
+  const accTimeIdx = findTimeColumnFor(accFile.headers, accFile.rows);
+  const gyroTimeIdx = findTimeColumnFor(gyroFile.headers, gyroFile.rows);
+  const accCols = numericColumnIndices(accFile.rows, accTimeIdx);
+  const gyroCols = numericColumnIndices(gyroFile.rows, gyroTimeIdx);
+  if(!accCols.length) throw new Error('Accelerometer 파일에서 가속도 숫자 열을 찾지 못했습니다.');
+  if(!gyroCols.length) throw new Error('Gyroscope 파일에서 각속도 숫자 열을 찾지 못했습니다.');
+
+  const accPairs = accFile.rows
+    .map(r => ({t:r[accTimeIdx], row:r}))
+    .filter(o => Number.isFinite(o.t))
+    .sort((a,b)=>a.t-b.t);
+  const gyroPairs = gyroFile.rows
+    .map(r => ({t:r[gyroTimeIdx], row:r}))
+    .filter(o => Number.isFinite(o.t))
+    .sort((a,b)=>a.t-b.t);
+  if(accPairs.length < 10 || gyroPairs.length < 10) throw new Error('두 파일의 시간 자료가 충분하지 않습니다.');
+
+  const accT0 = accPairs[0].t;
+  const gyroT0 = gyroPairs[0].t;
+  const baseT = accPairs.map(o => o.t - accT0);
+  const gyroT = gyroPairs.map(o => o.t - gyroT0);
+  const gyroValues = gyroCols.map(c => gyroPairs.map(o => o.row[c]));
+  const pointers = gyroCols.map(() => ({j:0}));
+
+  const combinedHeaders = ['Time (s)'];
+  accCols.forEach(c => combinedHeaders.push(`Accelerometer: ${accFile.headers[c] || ('Column '+(c+1))}`));
+  gyroCols.forEach(c => combinedHeaders.push(`Gyroscope: ${gyroFile.headers[c] || ('Column '+(c+1))}`));
+
+  const combinedRows = [];
+  for(let i=0;i<accPairs.length;i++){
+    const t = baseT[i];
+    if(!Number.isFinite(t)) continue;
+    const row = [t];
+    accCols.forEach(c => row.push(accPairs[i].row[c]));
+    gyroCols.forEach((c,idx) => row.push(interpolateSeries(gyroT, gyroValues[idx], t, pointers[idx])));
+    if(row.filter(Number.isFinite).length >= 3) combinedRows.push(row);
+  }
+  if(combinedRows.length < 32) throw new Error('두 파일의 시간 범위가 충분히 겹치지 않아 결합할 수 없습니다.');
+
+  return {
+    headers: combinedHeaders,
+    rows: combinedRows,
+    accFileName: accFile.name,
+    gyroFileName: gyroFile.name,
+    accTimeHeader: accFile.headers[accTimeIdx],
+    gyroTimeHeader: gyroFile.headers[gyroTimeIdx],
+    accCols: accCols.length,
+    gyroCols: gyroCols.length
+  };
+}
+
+function populateSelectors(){
+  const selects = [$('timeCol'), $('accCol'), $('gyroCol')];
+  for(const sel of selects){
+    sel.innerHTML = '';
+    headers.forEach((h,i)=>{
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${i+1}. ${h}`;
+      sel.appendChild(opt);
+    });
+  }
+
+  const lower = headers.map(h => h.toLowerCase());
+  let timeIdx = lower.findIndex(h => /time|시간|t\s*\(?s?\)?/.test(h));
+  if(timeIdx < 0) timeIdx = findLikelyTimeColumn();
+  $('timeCol').value = Math.max(0, timeIdx);
+
+  const numericCols = headers.map((h,i)=>({i, s: std(data.map(r=>r[i]))}));
+  const accCandidates = lower.map((h,i)=>({h,i})).filter(o => /acc|accel|acceleration|가속|linear/.test(o.h) && !/gyro|gyr|각속|rotation/.test(o.h));
+  const gyroCandidates = lower.map((h,i)=>({h,i})).filter(o => /gyro|gyr|angular velocity|rotation|각속|ω|w/.test(o.h));
+
+  let accIdx = pickLargestStd(accCandidates.map(o=>o.i), timeIdx);
+  if(accIdx < 0) accIdx = pickLargestStd(numericCols.map(o=>o.i), timeIdx);
+  let gyroIdx = pickLargestStd(gyroCandidates.map(o=>o.i), timeIdx);
+  if(gyroIdx < 0) gyroIdx = accIdx;
+
+  $('accCol').value = accIdx;
+  $('gyroCol').value = gyroIdx;
+}
+
+function pickLargestStd(indices, exclude){
+  let best = -1, bestS = -Infinity;
+  for(const i of indices){
+    if(i === exclude) continue;
+    const s = std(data.map(r=>r[i]));
+    if(s > bestS){ bestS = s; best = i; }
+  }
+  return best;
+}
+
+function findLikelyTimeColumn(){
+  let best = 0, bestScore = -Infinity;
+  for(let c=0;c<headers.length;c++){
+    const vals = data.map(r=>r[c]).filter(Number.isFinite);
+    if(vals.length < data.length * .7) continue;
+    let inc = 0;
+    for(let i=1;i<vals.length;i++) if(vals[i] > vals[i-1]) inc++;
+    const range = vals[vals.length-1]-vals[0];
+    const score = inc/vals.length + (range > 1 ? 1 : 0) - std(vals)/100000;
+    if(score > bestScore){ bestScore = score; best = c; }
+  }
+  return best;
+}
+
+function renderPreview(){
+  const tbl = $('preview');
+  tbl.innerHTML = '';
+  if(!headers.length) return;
+  const tr = document.createElement('tr');
+  headers.slice(0,8).forEach(h=>{ const th=document.createElement('th'); th.textContent=h; tr.appendChild(th); });
+  tbl.appendChild(tr);
+  data.slice(0,6).forEach(row=>{
+    const tr = document.createElement('tr');
+    row.slice(0,8).forEach((v,i)=>{ const td=document.createElement('td'); td.textContent = Number.isFinite(v) ? short(v,5) : ''; tr.appendChild(td); });
+    tbl.appendChild(tr);
+  });
+}
+
+function getFullTimeRange(){
+  if(!data.length || !headers.length) return null;
+  const timeIdx = Number($('timeCol').value || 0);
+  const times = data.map(r=>r[timeIdx]).filter(Number.isFinite).sort((a,b)=>a-b);
+  if(times.length < 2) return null;
+  const start = times[0];
+  const end = times[times.length-1];
+  return {start, end, duration:end-start, count:times.length};
+}
+
+function getTrimWindow(duration){
+  const mode = $('trimMode').value;
+  let start = 0, end = duration;
+  if(mode === 'cut'){
+    const cutStart = Math.max(0, Number($('cutStart').value) || 0);
+    const cutEnd = Math.max(0, Number($('cutEnd').value) || 0);
+    start = Math.min(duration, cutStart);
+    end = Math.max(0, duration - cutEnd);
+  } else if(mode === 'range'){
+    const rs = Number($('rangeStart').value);
+    const re = Number($('rangeEnd').value);
+    if(Number.isFinite(rs)) start = Math.max(0, rs);
+    if(Number.isFinite(re)) end = Math.min(duration, re);
+  }
+  if(end < start){ const tmp = start; start = end; end = tmp; }
+  return {mode, start, end, duration:Math.max(0,end-start)};
+}
+
+function updateRangeInfo(){
+  const info = $('rangeInfo');
+  const range = getFullTimeRange();
+  if(!range){ info.textContent = '파일을 업로드하면 전체 시간 범위가 표시됩니다.'; return; }
+  const win = getTrimWindow(range.duration);
+  let modeText = '전체 자료 분석';
+  if(win.mode === 'cut') modeText = `처음 ${short(win.start,2)} s, 끝 ${short(range.duration-win.end,2)} s 제외`;
+  if(win.mode === 'range') modeText = `${short(win.start,2)} s ~ ${short(win.end,2)} s 직접 지정`;
+  info.innerHTML = `전체 시간 범위: 0 ~ ${short(range.duration,2)} s, 전체 행: ${range.count}개<br>현재 분석 구간: ${short(win.start,2)} ~ ${short(win.end,2)} s (${short(win.duration,2)} s) · ${escapeHtml(modeText)}`;
+}
+
+function short(x,d=3){
+  if(!Number.isFinite(x)) return '-';
+  const ax = Math.abs(x);
+  if(ax !== 0 && (ax < 0.001 || ax >= 10000)) return x.toExponential(2);
+  return Number(x.toFixed(d)).toString();
+}
+
+function movingAverage(arr, win){
+  win = Math.max(1, Math.floor(win));
+  if(win % 2 === 0) win += 1;
+  if(win <= 1) return arr.slice();
+  const half = Math.floor(win/2);
+  const out = new Array(arr.length);
+  for(let i=0;i<arr.length;i++){
+    let s=0,n=0;
+    for(let j=i-half;j<=i+half;j++){
+      if(j>=0 && j<arr.length && Number.isFinite(arr[j])){ s += arr[j]; n++; }
+    }
+    out[i] = n ? s/n : arr[i];
+  }
+  return out;
+}
+
+function centralDiff(y,t){
+  const out = new Array(y.length).fill(NaN);
+  for(let i=1;i<y.length-1;i++){
+    const dt = t[i+1]-t[i-1];
+    out[i] = dt !== 0 ? (y[i+1]-y[i-1])/dt : NaN;
+  }
+  out[0] = out[1]; out[out.length-1] = out[out.length-2];
+  return out;
+}
+
+function nextPow2LE(n){
+  let p=1; while(p*2<=n) p*=2; return p;
+}
+
+function fft(re, im){
+  const n = re.length;
+  let j = 0;
+  for(let i=1;i<n;i++){
+    let bit = n >> 1;
+    for(; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if(i < j){ [re[i],re[j]]=[re[j],re[i]]; [im[i],im[j]]=[im[j],im[i]]; }
+  }
+  for(let len=2; len<=n; len<<=1){
+    const ang = -2*Math.PI/len;
+    const wlenRe = Math.cos(ang), wlenIm = Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let wRe=1, wIm=0;
+      for(let k=0;k<len/2;k++){
+        const uRe = re[i+k], uIm = im[i+k];
+        const vRe = re[i+k+len/2]*wRe - im[i+k+len/2]*wIm;
+        const vIm = re[i+k+len/2]*wIm + im[i+k+len/2]*wRe;
+        re[i+k] = uRe + vRe; im[i+k] = uIm + vIm;
+        re[i+k+len/2] = uRe - vRe; im[i+k+len/2] = uIm - vIm;
+        const nwRe = wRe*wlenRe - wIm*wlenIm;
+        const nwIm = wRe*wlenIm + wIm*wlenRe;
+        wRe=nwRe; wIm=nwIm;
+      }
+    }
+  }
+}
+
+function spectrum(y, dt, maxN){
+  const clean = y.filter(Number.isFinite);
+  const N = Math.max(256, nextPow2LE(Math.min(clean.length, maxN)));
+  const start = Math.max(0, Math.floor((clean.length - N)/2));
+  const segment = clean.slice(start, start+N);
+  const m = mean(segment);
+  const re = new Array(N), im = new Array(N).fill(0);
+  for(let n=0;n<N;n++){
+    const blackman = 0.42 - 0.5*Math.cos(2*Math.PI*n/(N-1)) + 0.08*Math.cos(4*Math.PI*n/(N-1));
+    re[n] = (segment[n]-m) * blackman;
+  }
+  fft(re,im);
+  const f=[], p=[];
+  for(let k=1;k<N/2;k++){
+    f.push(k/(N*dt));
+    p.push((re[k]*re[k]+im[k]*im[k]) / N);
+  }
+  return {f,p,N};
+}
+
+function findSpectrumPeaks(f,p,fMin,fMax){
+  const peaks = [];
+  const maxP = Math.max(...p.filter(Number.isFinite));
+  for(let i=1;i<p.length-1;i++){
+    if(f[i] < fMin || f[i] > fMax) continue;
+    if(p[i] > p[i-1] && p[i] > p[i+1] && p[i] > maxP*0.015){
+      peaks.push({f:f[i], p:p[i]});
+    }
+  }
+  peaks.sort((a,b)=>b.p-a.p);
+  const selected = [];
+  const minSep = Math.max(0.025, (f[1]-f[0])*3);
+  for(const pk of peaks){
+    if(selected.every(s => Math.abs(s.f - pk.f) > minSep)) selected.push(pk);
+    if(selected.length >= 4) break;
+  }
+  return selected.sort((a,b)=>a.f-b.f);
+}
+
+function localPeaks(t,y, minDistanceSamples, threshold){
+  const peaks = [];
+  let last = -Infinity;
+  for(let i=1;i<y.length-1;i++){
+    if(!Number.isFinite(y[i])) continue;
+    if(i-last < minDistanceSamples) continue;
+    if(y[i] > y[i-1] && y[i] > y[i+1] && y[i] > threshold){
+      peaks.push({i,t:t[i], y:y[i]});
+      last = i;
+    }
+  }
+  return peaks;
+}
+
+function estimatePeriodFromPeaks(t,y, domFreq, dt){
+  const sig = std(y);
+  if(!Number.isFinite(sig) || sig === 0) return {period:NaN, peaks:[], diffs:[], cv:NaN};
+  const minDist = Number.isFinite(domFreq) && domFreq>0 ? Math.max(2, Math.floor(0.55/(domFreq*dt))) : 5;
+  const peaks = localPeaks(t,y,minDist,0.2*sig);
+  const diffs=[];
+  for(let i=1;i<peaks.length;i++) diffs.push(peaks[i].t - peaks[i-1].t);
+  const good = diffs.filter(d => Number.isFinite(d) && d > dt*2);
+  const p = median(good);
+  const cv = good.length >= 3 && Number.isFinite(mean(good)) && mean(good) !== 0 ? std(good)/mean(good) : NaN;
+  return {period:p, peaks, diffs:good, cv};
+}
+
+function estimateDamping(peaks){
+  const pts = peaks.filter(p => p.y > 0);
+  if(pts.length < 5) return {tau:NaN, slope:NaN};
+  const xs = pts.map(p=>p.t), ys = pts.map(p=>Math.log(Math.abs(p.y)));
+  const mx = mean(xs), my = mean(ys);
+  let num=0, den=0;
+  for(let i=0;i<xs.length;i++){ num += (xs[i]-mx)*(ys[i]-my); den += (xs[i]-mx)*(xs[i]-mx); }
+  const slope = den ? num/den : NaN;
+  return {tau: slope < 0 ? -1/slope : NaN, slope};
+}
+
+function drawChart(canvas, series, opts={}){
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(rect.width*dpr); canvas.height = Math.floor(rect.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const W = rect.width, H = rect.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,W,H);
+  const pad = {l:58,r:18,t:16,b:42};
+  const plotW = W-pad.l-pad.r, plotH = H-pad.t-pad.b;
+  let xs=[], ys=[];
+  for(const s of series){ xs = xs.concat(s.x.filter(Number.isFinite)); ys = ys.concat(s.y.filter(Number.isFinite)); }
+  if(!xs.length || !ys.length){
+    ctx.fillStyle='#687386'; ctx.font='14px system-ui'; ctx.fillText('표시할 데이터가 없습니다.', pad.l, pad.t+30); return;
+  }
+  let xMin = opts.xMin ?? Math.min(...xs), xMax = opts.xMax ?? Math.max(...xs);
+  let yMin = opts.yMin ?? Math.min(...ys), yMax = opts.yMax ?? Math.max(...ys);
+  if(xMax === xMin){ xMax += 1; xMin -= 1; }
+  if(yMax === yMin){ yMax += 1; yMin -= 1; }
+  const yPad = (yMax-yMin)*0.08; yMax+=yPad; yMin-=yPad;
+  const X = x => pad.l + (x-xMin)/(xMax-xMin)*plotW;
+  const Y = y => pad.t + (yMax-y)/(yMax-yMin)*plotH;
+
+  ctx.strokeStyle = '#e5eaf2'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  for(let i=0;i<=5;i++){
+    const yy = pad.t + plotH*i/5; ctx.moveTo(pad.l,yy); ctx.lineTo(pad.l+plotW,yy);
+  }
+  for(let i=0;i<=6;i++){
+    const xx = pad.l + plotW*i/6; ctx.moveTo(xx,pad.t); ctx.lineTo(xx,pad.t+plotH);
+  }
+  ctx.stroke();
+  ctx.strokeStyle = '#9aa6ba'; ctx.beginPath(); ctx.rect(pad.l,pad.t,plotW,plotH); ctx.stroke();
+
+  ctx.fillStyle = '#687386'; ctx.font='11px system-ui'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=5;i++){
+    const val = yMax - (yMax-yMin)*i/5;
+    ctx.fillText(short(val,2), pad.l-7, pad.t+plotH*i/5);
+  }
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<=6;i++){
+    const val = xMin + (xMax-xMin)*i/6;
+    ctx.fillText(short(val,2), pad.l+plotW*i/6, pad.t+plotH+10);
+  }
+
+  const colors = ['#2457ff','#19a77b','#e87b1e','#c83232','#6b4eff'];
+  series.forEach((s,si)=>{
+    ctx.strokeStyle = s.color || colors[si%colors.length]; ctx.lineWidth = s.width || 1.6;
+    ctx.beginPath(); let started=false;
+    for(let i=0;i<s.x.length;i++){
+      const x=s.x[i], y=s.y[i];
+      if(!Number.isFinite(x)||!Number.isFinite(y)) continue;
+      const xx=X(x), yy=Y(y);
+      if(!started){ ctx.moveTo(xx,yy); started=true; } else ctx.lineTo(xx,yy);
+    }
+    ctx.stroke();
+  });
+
+  // legend
+  ctx.textAlign='left'; ctx.textBaseline='top'; ctx.font='12px system-ui';
+  let lx = pad.l+8, ly = pad.t+8;
+  series.forEach((s,si)=>{
+    ctx.fillStyle = s.color || colors[si%colors.length]; ctx.fillRect(lx,ly+3,14,3);
+    ctx.fillStyle = '#344055'; ctx.fillText(s.name, lx+20, ly);
+    lx += Math.min(170, 22 + ctx.measureText(s.name).width + 34);
+    if(lx > W-180){ lx = pad.l+8; ly += 18; }
+  });
+}
+
+function normalizeForPlot(y){
+  const s = std(y);
+  if(!s || !Number.isFinite(s)) return y.slice();
+  return y.map(v => Number.isFinite(v) ? v/s : NaN);
+}
+
+function rFiniteRatio(arr){
+  return arr.length ? arr.filter(Number.isFinite).length / arr.length : 0;
+}
+
+function getPhysicalModelInputs(){
+  const m = Number($('massM')?.value);
+  const I = Number($('momentI')?.value);
+  const ms = Number($('springMass')?.value);
+  const Is = Number($('springI')?.value);
+  const hasM = Number.isFinite(m) && m > 0;
+  const hasI = Number.isFinite(I) && I > 0;
+  const hasMs = Number.isFinite(ms) && ms >= 0;
+  const hasIs = Number.isFinite(Is) && Is >= 0;
+  const mEff = hasM ? m + (hasMs ? ms/3 : 0) : NaN;
+  const IEff = hasI ? I + (hasIs ? Is/3 : 0) : NaN;
+  return {
+    m: hasM ? m : NaN,
+    I: hasI ? I : NaN,
+    ms: hasMs ? ms : NaN,
+    Is: hasIs ? Is : NaN,
+    mEff, IEff,
+    invIEff: Number.isFinite(IEff) && IEff > 0 ? 1/IEff : NaN,
+    hasAny: hasM || hasI || hasMs || hasIs,
+    hasEffective: Number.isFinite(mEff) || Number.isFinite(IEff)
+  };
+}
+
+function analyze(){
+  if(!data.length) return;
+  const timeIdx = Number($('timeCol').value), accIdx = Number($('accCol').value), gyroIdx = Number($('gyroCol').value);
+  let rows = data.map(r => ({t:r[timeIdx], acc:r[accIdx], gyro:r[gyroIdx]})).filter(r => Number.isFinite(r.t) && Number.isFinite(r.acc));
+  rows.sort((a,b)=>a.t-b.t);
+  // remove duplicate times
+  rows = rows.filter((r,i)=> i===0 || r.t !== rows[i-1].t);
+  if(rows.length < 32) return alert('분석할 수 있는 데이터 행이 너무 적습니다.');
+
+  const originalT0 = rows[0].t;
+  rows = rows.map(r => ({...r, rel:r.t-originalT0}));
+  const originalDuration = rows[rows.length-1].rel;
+  const trim = getTrimWindow(originalDuration);
+  updateRangeInfo();
+  const rowsBeforeTrim = rows.length;
+  rows = rows.filter(r => r.rel >= trim.start && r.rel <= trim.end);
+  if(rows.length < 32) return alert('선택한 분석 구간에 남은 데이터 행이 너무 적습니다. 시작/끝 제외 시간을 줄이거나 전체 자료 분석을 선택하세요.');
+
+  const t0 = rows[0].rel;
+  const t = rows.map(r => r.rel - t0);
+  const accRaw = rows.map(r => r.acc);
+  const gyroRaw = rows.map(r => Number.isFinite(r.gyro) ? r.gyro : NaN);
+  const dts=[]; for(let i=1;i<t.length;i++) if(t[i]>t[i-1]) dts.push(t[i]-t[i-1]);
+  const dt = median(dts);
+  const acc = accRaw.map(v => v - mean(accRaw));
+  let gyro = gyroRaw;
+  if(gyro.filter(Number.isFinite).length > gyro.length*0.7){
+    gyro = gyroRaw.map(v => v - mean(gyroRaw));
+  }
+  const smoothWin = Math.max(1, Number($('smoothWin').value)||1);
+  const gyroSmooth = movingAverage(gyro, smoothWin);
+  const angAccRaw = centralDiff(gyroSmooth,t);
+  const angAcc = angAccRaw.map(v => Number.isFinite(v) ? v - mean(angAccRaw) : NaN);
+
+  const maxFftN = Math.max(256, Number($('maxFftN').value)||4096);
+  const fMin = Number($('fMin').value)||0.05, fMax = Number($('fMax').value)||2.0;
+  const spAcc = spectrum(acc,dt,maxFftN);
+  const peaks = findSpectrumPeaks(spAcc.f, spAcc.p, fMin, fMax);
+  let topTwo = peaks.slice().sort((a,b)=>b.p-a.p).slice(0,2).sort((a,b)=>a.f-b.f);
+  let fLow = topTwo[0]?.f ?? NaN, fHigh = topTwo[1]?.f ?? NaN;
+  const beatT = (Number.isFinite(fLow)&&Number.isFinite(fHigh)&&Math.abs(fHigh-fLow)>0) ? 1/Math.abs(fHigh-fLow) : NaN;
+  const fMean = (Number.isFinite(fLow)&&Number.isFinite(fHigh)) ? (fLow+fHigh)/2 : NaN;
+  const omegaLow = Number.isFinite(fLow) ? 2*Math.PI*fLow : NaN;
+  const omegaHigh = Number.isFinite(fHigh) ? 2*Math.PI*fHigh : NaN;
+  const omegaLow2 = Number.isFinite(omegaLow) ? omegaLow*omegaLow : NaN;
+  const omegaHigh2 = Number.isFinite(omegaHigh) ? omegaHigh*omegaHigh : NaN;
+  const omegaMean = Number.isFinite(fMean) ? 2*Math.PI*fMean : NaN;
+  const phys = getPhysicalModelInputs();
+
+  const domFreq = topTwo.length ? topTwo.slice().sort((a,b)=>b.p-a.p)[0].f : NaN;
+  const periodAcc = estimatePeriodFromPeaks(t,acc,domFreq,dt);
+  const damping = estimateDamping(periodAcc.peaks);
+
+  const spAng = angAcc.filter(Number.isFinite).length > 32 ? spectrum(angAcc,dt,maxFftN) : null;
+  const angOk = rFiniteRatio(angAcc) > 0.7;
+  const accNorm = normalizeForPlot(acc);
+  const angNorm = normalizeForPlot(angAcc);
+  const zeroPhaseCorr = angOk ? corr(accNorm, angNorm) : NaN;
+  const lagMax = Number.isFinite(domFreq) && domFreq > 0 ? Math.max(2, Math.floor(0.5/(domFreq*dt))) : Math.min(80, Math.floor(t.length/10));
+  const lagInfo = angOk ? bestLagCorrelation(accNorm, angNorm, lagMax) : {lag:0,corr:NaN};
+  const phaseDeg = Number.isFinite(domFreq) ? wrapPhase(lagInfo.lag * dt * domFreq * 360) : NaN;
+  const envWin = Number.isFinite(domFreq) && domFreq > 0 ? Math.max(7, Math.floor(1/(domFreq*dt))) : Math.max(7, Math.floor(t.length/30));
+  const accEnv = movingRMS(accNorm, envWin);
+  const angEnv = angOk ? movingRMS(angNorm, envWin) : new Array(t.length).fill(NaN);
+  const envCorr = angOk ? corr(accEnv, angEnv) : NaN;
+  const couplingScore = Number.isFinite(envCorr) ? clamp(-envCorr,0,1) : NaN;
+  const absAcc = acc.map(v=>Math.abs(v));
+  const spikeRatio = percentile(absAcc,0.95) ? Math.max(...absAcc.filter(Number.isFinite))/percentile(absAcc,0.95) : NaN;
+  const third = Math.max(3, Math.floor(acc.length/3));
+  const decayRatio = rms(acc.slice(-third)) / rms(acc.slice(0,third));
+  const regularity = Number.isFinite(periodAcc.cv) ? Math.max(0, 1-periodAcc.cv) : NaN;
+
+  lastResult = {headers, selected:{time:headers[timeIdx], acc:headers[accIdx], gyro:headers[gyroIdx]}, trim:{...trim, originalDuration, rowsBeforeTrim, rowsAfterTrim:rows.length}, t, accRaw, acc, gyro, angAcc, dt, spAcc, spAng, peaks, topTwo, fLow, fHigh, beatT, fMean, omegaLow, omegaHigh, omegaLow2, omegaHigh2, omegaMean, phys, periodAcc, damping, accNorm, angNorm, zeroPhaseCorr, lagInfo, phaseDeg, accEnv, angEnv, envCorr, couplingScore, spikeRatio, decayRatio, regularity, envWin, domFreq};
+  renderResults();
+}
+
+function renderResults(){
+  const r = lastResult;
+  $('nVal').textContent = String(r.t.length);
+  $('dtVal').textContent = `${short(r.dt,4)} s`;
+  $('periodVal').textContent = Number.isFinite(r.periodAcc.period) ? `${short(r.periodAcc.period,2)} s` : '-';
+  $('modeVal').textContent = Number.isFinite(r.fLow)&&Number.isFinite(r.fHigh) ? `${short(r.fLow,3)}, ${short(r.fHigh,3)} Hz` : '-';
+  $('beatVal').textContent = Number.isFinite(r.beatT) ? `${short(r.beatT,2)} s` : '-';
+  $('dampingVal').textContent = Number.isFinite(r.damping.tau) ? `${short(r.damping.tau,1)} s` : '-';
+  $('phaseVal').textContent = classifyPhase(r.zeroPhaseCorr);
+  $('couplingVal').textContent = classifyCoupling(r.envCorr);
+
+  const badges = [];
+  badges.push(`<span class="pill">업로드: ${uploadSourceMode === 'split' ? '2파일 결합' : '단일 파일'}</span>`);
+  badges.push(`<span class="pill">시간: ${escapeHtml(r.selected.time)}</span>`);
+  badges.push(`<span class="pill">가속도: ${escapeHtml(r.selected.acc)}</span>`);
+  badges.push(`<span class="pill">각속도: ${escapeHtml(r.selected.gyro)}</span>`);
+  badges.push(`<span class="pill">분석 구간: ${short(r.trim.start,2)}~${short(r.trim.end,2)} s</span>`);
+  badges.push(`<span class="pill">제외 행: ${r.trim.rowsBeforeTrim-r.trim.rowsAfterTrim}개</span>`);
+  badges.push(`<span class="pill">FFT N=${r.spAcc.N}</span>`);
+  if(Number.isFinite(r.periodAcc.cv)) badges.push(`<span class="pill">주기 규칙성: ${short((1-r.periodAcc.cv)*100,0)}%</span>`);
+  if(Number.isFinite(r.zeroPhaseCorr)) badges.push(`<span class="pill">위상 상관 r=${short(r.zeroPhaseCorr,2)}</span>`);
+  if(Number.isFinite(r.envCorr)) badges.push(`<span class="pill">포락선 상관 r=${short(r.envCorr,2)}</span>`);
+  if(Number.isFinite(r.omegaLow2) && Number.isFinite(r.omegaHigh2)) badges.push(`<span class="pill">ω²: ${short(r.omegaLow2,2)}, ${short(r.omegaHigh2,2)} rad²/s²</span>`);
+  if(r.phys && Number.isFinite(r.phys.invIEff)) badges.push(`<span class="pill">1/I′=${short(r.phys.invIEff,1)} kg⁻¹m⁻²</span>`);
+  $('badges').innerHTML = badges.join('');
+
+  const lines = [];
+  lines.push('■ 0. 이론 모델 기준');
+  lines.push('· 이 분석은 첨부 발표의 카메라 트래킹 방식이 아니라 phyphox 센서 방식입니다. 이론 해석은 나선형 용수철의 병진-회전 결합, 선형화, 정상모드, 맥놀이 구조를 따르되, 수치 계산에는 스마트폰 가속도계와 자이로스코프 데이터만 사용합니다.');
+  lines.push('· 윌버포스 진자는 병진 변위 z와 회전각 θ가 결합된 2자유도 진동계입니다. 따라서 결과 해석은 단순히 “위아래로 흔들렸다”가 아니라, 병진 운동과 비틀림 운동 사이의 에너지 교환 여부를 판단하는 방식으로 이루어져야 합니다.');
+  lines.push('· 나선형 용수철의 에너지는 늘어남과 비틀림을 완전히 독립된 항으로만 나누기 어렵습니다. 결합항 때문에 U(z,θ) ≠ U_z(z)+U_θ(θ)로 해석하며, 이 결합항이 병진-회전 에너지 교환의 원인입니다.');
+  lines.push('· 작은 진동에서는 평형점 주변 선형화로 m z¨ + b_z z˙ + k z + cθ = 0, I θ¨ + b_θ θ˙ + κθ + cz = 0으로 정리할 수 있습니다. 여기서 k는 병진 방향 탄성, κ는 비틀림 탄성, c는 병진-회전 결합 세기입니다.');
+  lines.push('· 회전 관성 I가 커지면 회전 고유진동수 f_θ가 작아지므로, 볼트나 너트의 위치는 맥놀이가 나타나는 정도를 조절하는 핵심 변인입니다. 병진 고유진동수 f_z와 회전 고유진동수 f_θ가 가까울수록 에너지 교환이 더 뚜렷하게 관찰됩니다.');
+  lines.push('· 스프링 자체의 운동량도 무시하지 않으면 유효 질량과 유효 관성모멘트를 m′=m+mₛ/3, I′=I+Iₛ/3으로 보정합니다. 이 보정은 스프링을 질량 없는 이상체로 가정했을 때 생기는 이론-실험 차이를 줄이는 해석입니다.');
+  lines.push('· FFT에서 관찰되는 두 주요 봉우리는 결합계의 두 정상모드 주파수로 해석합니다. 두 주파수 차이 Δf가 작을수록 같은 운동 성분의 진폭이 다시 커지는 맥놀이 주기 1/Δf는 길어집니다. 병진 운동 에너지가 회전 운동 쪽으로 크게 넘어가는 시간은 대략 1/(2Δf)입니다.');
+
+  lines.push('\n■ 1. 분석 구간과 자료 품질');
+  lines.push(`· 분석 자료 수는 ${r.t.length}개, 평균 시간 간격은 ${short(r.dt,4)} s입니다.`);
+  if(uploadSourceMode === 'split') lines.push('· Accelerometer.csv와 Gyroscope.csv를 각각 읽은 뒤, 두 파일의 시간축을 0초 기준으로 맞추고 자이로스코프 값을 가속도 시간축에 선형 보간하여 병진-회전 비교가 가능하도록 결합했습니다.');
+  if(r.trim.mode === 'full') lines.push(`· 전체 자료를 분석했습니다. 전체 시간 범위는 0~${short(r.trim.originalDuration,2)} s입니다. 시작/끝 버튼 조작이 그래프에 남아 있으면 구간 제외 모드를 사용하는 것이 좋습니다.`);
+  else lines.push(`· 시작/끝 방해 구간을 제외하고 ${short(r.trim.start,2)}~${short(r.trim.end,2)} s 구간만 분석했습니다. 제외된 행은 ${r.trim.rowsBeforeTrim-r.trim.rowsAfterTrim}개입니다.`);
+  if(Number.isFinite(r.spikeRatio) && r.spikeRatio > 3.0) lines.push(`· 가속도 자료에 순간적으로 큰 튐이 남아 있습니다. 피크/FFT 분석에 영향을 줄 수 있으므로 분석 시작·끝 시간을 다시 조정해 보세요.`);
+  if(Number.isFinite(r.periodAcc.cv)){
+    const reg = r.periodAcc.cv < 0.08 ? '매우 규칙적' : r.periodAcc.cv < 0.18 ? '대체로 규칙적' : '불규칙성이 큼';
+    lines.push(`· 피크 간격의 변동계수는 ${short(r.periodAcc.cv,3)}로, 병진 진동은 ${reg}인 편입니다.`);
+  }
+
+  lines.push('\n■ 2. 시간-가속도 그래프 해석');
+  lines.push('· 병진 가속도는 평균값을 제거하여 진동 성분만 분석했습니다. 그래프의 최대값과 최소값이 반복되면 물체가 용수철 축 방향으로 주기적인 상하 진동을 한 것입니다.');
+  if(Number.isFinite(r.periodAcc.period)) lines.push(`· 피크 간격으로 추정한 병진 진동 주기는 약 ${short(r.periodAcc.period,3)} s, 주파수는 약 ${short(1/r.periodAcc.period,4)} Hz입니다.`);
+  if(Number.isFinite(r.decayRatio)){
+    if(r.decayRatio < 0.75) lines.push(`· 후반부 RMS 진폭이 초반부의 약 ${short(r.decayRatio*100,0)}%로 감소하여 감쇠 진동이 뚜렷합니다.`);
+    else lines.push(`· 후반부 RMS 진폭이 초반부의 약 ${short(r.decayRatio*100,0)}% 수준으로 유지되어 감쇠가 크지 않은 편입니다.`);
+  }
+  if(Number.isFinite(r.damping.tau)) lines.push(`· 피크 감소를 지수 감쇠로 근사하면 감쇠 시간상수는 약 ${short(r.damping.tau,2)} s입니다. 이 값은 마찰·공기 저항·고정 장치 흔들림의 영향을 함께 포함합니다.`);
+
+  lines.push('\n■ 3. 병진-회전 비교 해석');
+  if(r.gyro.filter(Number.isFinite).length > r.gyro.length*0.7){
+    lines.push('· 자이로스코프 각속도 자료를 시간에 대해 미분하여 회전 각가속도를 계산했습니다. 각속도의 부호가 반복적으로 바뀌면 물체가 한 방향으로 계속 도는 것이 아니라 시계·반시계 방향으로 번갈아 비틀림 진동을 한 것입니다.');
+    lines.push(`· 병진 가속도와 회전 각가속도의 0시차 상관계수는 ${short(r.zeroPhaseCorr,3)}이며, 위상 관계는 '${classifyPhase(r.zeroPhaseCorr)}'로 판정됩니다.`);
+    if(Number.isFinite(r.phaseDeg)) lines.push(`· 두 신호가 가장 잘 겹치는 지연 시간은 약 ${short(r.lagInfo.lag*r.dt,3)} s이며, 지배 주파수 기준 위상차는 약 ${short(r.phaseDeg,1)}°입니다.`);
+    if(Number.isFinite(r.envCorr)){
+      lines.push(`· 병진 진폭 포락선과 회전 진폭 포락선의 상관계수는 ${short(r.envCorr,3)}입니다. 판정: ${classifyCoupling(r.envCorr)}.`);
+      if(r.envCorr < -0.2) lines.push('· 한쪽 진폭이 커질 때 다른 쪽 진폭이 작아지는 경향이 있으므로, 병진 운동과 회전 운동 사이의 에너지 교환으로 해석할 수 있습니다.');
+      else lines.push('· 포락선이 뚜렷하게 반대로 움직이지 않습니다. 초기 조건, 볼트 위치, 스마트폰 축 정렬을 조정하면 맥놀이가 더 분명해질 수 있습니다.');
+    }
+  } else {
+    lines.push('· 자이로스코프 열의 숫자 자료가 부족하여 병진-회전 비교 해석은 제한됩니다. phyphox에서 가속도계와 자이로스코프를 동시에 기록한 파일을 사용하세요.');
+  }
+
+  lines.push('\n■ 4. FFT 정상모드·맥놀이 해석');
+  if(Number.isFinite(r.fLow)&&Number.isFinite(r.fHigh)){
+    lines.push(`· FFT 스펙트럼에서 주요 정상모드 주파수 후보는 f₁=${short(r.fLow,4)} Hz, f₂=${short(r.fHigh,4)} Hz입니다.`);
+    lines.push(`· 두 주파수 차이는 ${short(Math.abs(r.fHigh-r.fLow),4)} Hz이므로, 같은 운동 성분의 진폭이 다시 커지는 맥놀이 주기 Tᵦ≈${short(r.beatT,3)} s로 계산됩니다.`);
+    lines.push(`· 병진 운동의 에너지가 회전 운동 쪽으로 크게 전달되는 시간은 대략 Tᵦ/2≈${short(r.beatT/2,3)} s로 볼 수 있습니다. 실제 그래프에서 병진 포락선이 작아지는 시점과 회전 포락선이 커지는 시점이 이 해석과 맞는지 비교하면 결과 해석이 더 견고해집니다.`);
+    lines.push('· 두 개의 주파수 봉우리는 윌버포스 진자의 운동이 단일 진동이 아니라 두 정상모드의 중첩으로 나타난다는 근거입니다. 두 봉우리의 높이가 비슷하면 두 정상모드가 비슷한 비율로 섞인 것이고, 한 봉우리가 압도적으로 크면 초기 조건이 특정 정상모드에 가까웠던 것으로 해석할 수 있습니다.');
+  } else {
+    lines.push('· 설정한 주파수 범위에서 뚜렷한 두 정상모드 봉우리를 찾지 못했습니다. FFT 범위를 조정하거나, 볼트 위치를 바꾸어 병진·회전 고유진동수가 더 가까워지도록 조절하세요.');
+  }
+
+  lines.push('\n■ 5. 스프링 질량·관성 보정 해석');
+  if(Number.isFinite(r.omegaLow)&&Number.isFinite(r.omegaHigh)){
+    lines.push(`· FFT 주파수를 각진동수로 환산하면 ω₁=${short(r.omegaLow,3)} rad/s, ω₂=${short(r.omegaHigh,3)} rad/s입니다.`);
+    lines.push(`· 발표 자료처럼 주파수 제곱을 비교하면 ω₁²=${short(r.omegaLow2,3)} rad²/s², ω₂²=${short(r.omegaHigh2,3)} rad²/s²입니다.`);
+  }
+  if(r.phys && r.phys.hasAny){
+    if(Number.isFinite(r.phys.mEff)) lines.push(`· 입력한 질량값을 기준으로 유효 질량은 m′=m+mₛ/3=${short(r.phys.mEff,5)} kg입니다.`);
+    if(Number.isFinite(r.phys.IEff)) lines.push(`· 입력한 관성값을 기준으로 유효 관성모멘트는 I′=I+Iₛ/3=${short(r.phys.IEff,7)} kg·m², 따라서 1/I′=${short(r.phys.invIEff,3)} kg⁻¹m⁻²입니다.`);
+    lines.push('· 여러 볼트 위치 또는 여러 질량 조건에서 같은 방식으로 측정하면, x축을 1/I′, y축을 ω₁²와 ω₂²로 두어 스프링 운동량 보정 전후의 이론 곡선과 실험값을 비교할 수 있습니다. 이 비교는 “회전 관성 변화가 정상모드 주파수에 미치는 영향”을 정량화하는 핵심 결과가 됩니다.');
+  } else {
+    lines.push('· 질량 m, 관성모멘트 I, 스프링 질량 mₛ, 스프링 관성모멘트 Iₛ를 입력하면 m′=m+mₛ/3, I′=I+Iₛ/3 보정값과 1/I′ 기준 비교값이 함께 계산됩니다. 여러 조건을 비교할 계획이면 이 값을 기록해 두는 것이 좋습니다.');
+  }
+  lines.push('· 단, 본 웹앱은 한 번의 phyphox 데이터에서 측정된 정상모드 주파수를 계산하는 도구입니다. k, κ, c를 독립적으로 결정하려면 여러 I 조건의 반복 실험값을 모아 ω²–1/I′ 그래프를 만들고 이론식 또는 추세선에 맞추는 추가 과정이 필요합니다.');
+
+  lines.push('\n■ 6. 변인과 오차 해석');
+  lines.push('· 볼트 위치를 바깥쪽으로 옮기면 회전 관성 I가 증가하여 회전 진동수가 낮아집니다. 따라서 조건별 FFT 피크의 위치와 맥놀이 주기를 비교하면 “회전 관성 변화가 결합 진동에 미치는 영향”을 정량적으로 설명할 수 있습니다.');
+  lines.push('· 시작·끝 버튼 조작, 손으로 놓는 과정, 스마트폰 중심축 오정렬, 좌우 질량 비대칭, 용수철 내부 마찰은 모두 그래프의 불규칙성이나 감쇠를 크게 만들 수 있습니다. 그래서 분석 구간을 제한하고, 같은 조건을 3회 이상 반복하여 평균과 표준편차를 함께 제시하는 것이 좋습니다.');
+  lines.push('· 영상 속 카메라 추적이나 장노출 궤적 분석은 본 분석에서 사용하지 않습니다. 또한 불꽃을 이용한 방출 방식은 학교 실험에서 안전상 권장하지 않으며, phyphox 원격 시작과 분석 구간 제외 기능으로 시작 외란을 줄이는 방식이 적절합니다.');
+  lines.push('· 가속도 자료는 위치 자료와 달리 초기 조건에 민감합니다. “비틀지 않고 아래로 당겼다”는 조건만으로 항상 완전한 맥놀이가 보장되지는 않으므로, 결과 해석에서는 초기 조건의 한계를 명시하는 것이 안전합니다.');
+
+  lines.push('\n■ 보고서 문장 예시');
+  if(Number.isFinite(r.fLow)&&Number.isFinite(r.fHigh)){
+    lines.push(`phyphox로 측정한 가속도 및 자이로스코프 자료를 분석한 결과, 병진 가속도 그래프에서 주기적인 상하 진동과 감쇠 경향이 확인되었다. 자이로스코프 각속도를 시간에 대해 미분하여 회전 각가속도를 구한 뒤 병진 가속도와 비교한 결과, 두 운동의 진폭 변화가 서로 연관되어 나타났다. FFT 스펙트럼에서는 ${short(r.fLow,3)} Hz와 ${short(r.fHigh,3)} Hz 부근의 두 정상모드 주파수가 확인되었고, 두 주파수 차이로부터 같은 운동 성분의 진폭이 다시 커지는 맥놀이 주기는 약 ${short(r.beatT,2)} s, 병진 운동에서 회전 운동으로 에너지가 크게 이동하는 시간은 약 ${short(r.beatT/2,2)} s로 해석된다. 따라서 본 실험의 물체 운동은 단순 상하 진동이 아니라 병진 운동과 회전 운동이 결합되어 에너지를 주기적으로 교환하는 복합 진동이며, 볼트 위치에 따른 회전 관성 변화와 초기 조건이 맥놀이의 뚜렷함을 결정하는 주요 요인으로 판단된다. 여러 조건을 비교할 때는 스프링 자체의 질량과 관성모멘트도 함께 고려하여 m′=m+mₛ/3, I′=I+Iₛ/3으로 보정하고, 1/I′에 따른 ω₁², ω₂² 변화를 비교하면 이론과 실험의 대응을 더 견고하게 설명할 수 있다.`);
+  } else {
+    lines.push('phyphox로 측정한 가속도 자료를 시간 그래프로 나타내어 진폭의 변화와 감쇠를 확인하였다. 다만 FFT 스펙트럼에서 두 정상모드가 충분히 분리되지 않아, 추의 회전 관성 조절과 초기 조건 개선이 필요하다고 판단하였다.');
+  }
+  $('summary').textContent = lines.join('\n');
+
+  const maxT = Math.min(Math.max(...r.t), 80);
+  const idxLimit = r.t.findIndex(x => x > maxT);
+  const n = idxLimit > 0 ? idxLimit : r.t.length;
+  const tt = r.t.slice(0,n);
+  drawChart($('timeChart'), [
+    {name:'보정 병진 가속도', x:tt, y:r.acc.slice(0,n)},
+  ], {xMin:0, xMax:maxT});
+
+  const phaseSeries = [{name:'병진 가속도(표준화)', x:tt, y:r.accNorm.slice(0,n)}];
+  if(r.angNorm.filter(Number.isFinite).length > r.angNorm.length*0.7) phaseSeries.push({name:'회전 각가속도(표준화)', x:tt, y:r.angNorm.slice(0,n)});
+  drawChart($('phaseChart'), phaseSeries, {xMin:0, xMax:maxT});
+
+  const envSeries = [{name:'병진 진폭 포락선', x:tt, y:r.accEnv.slice(0,n)}];
+  if(r.angEnv.filter(Number.isFinite).length > r.angEnv.length*0.7) envSeries.push({name:'회전 진폭 포락선', x:tt, y:r.angEnv.slice(0,n)});
+  drawChart($('envelopeChart'), envSeries, {xMin:0, xMax:maxT, yMin:0});
+
+  const gyroSeries = [];
+  if(r.gyro.filter(Number.isFinite).length > r.gyro.length*0.7) gyroSeries.push({name:'각속도(표준화)', x:tt, y:normalizeForPlot(r.gyro.slice(0,n))});
+  if(r.angAcc.filter(Number.isFinite).length > r.angAcc.length*0.7) gyroSeries.push({name:'각가속도(표준화)', x:tt, y:normalizeForPlot(r.angAcc.slice(0,n))});
+  drawChart($('gyroChart'), gyroSeries, {xMin:0, xMax:maxT});
+
+  const fMin = Number($('fMin').value)||0.05, fMax = Number($('fMax').value)||2.0;
+  const ff=[], pp=[];
+  for(let i=0;i<r.spAcc.f.length;i++){
+    if(r.spAcc.f[i]>=0 && r.spAcc.f[i]<=fMax*1.15){ ff.push(r.spAcc.f[i]); pp.push(r.spAcc.p[i]); }
+  }
+  drawChart($('fftChart'), [{name:'병진 가속도 FFT 세기', x:ff, y:pp}], {xMin:0, xMax:fMax*1.15});
+  downloadBtn.disabled = false;
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function downloadResultCSV(){
+  if(!lastResult) return;
+  const r = lastResult;
+  const lines = [];
+  lines.push('item,value,unit');
+  lines.push(`rows,${r.t.length},count`);
+  lines.push(`dt,${r.dt},s`);
+  lines.push(`trim_mode,${r.trim.mode},`);
+  lines.push(`trim_start,${r.trim.start},s`);
+  lines.push(`trim_end,${r.trim.end},s`);
+  lines.push(`original_duration,${r.trim.originalDuration},s`);
+  lines.push(`excluded_rows,${r.trim.rowsBeforeTrim-r.trim.rowsAfterTrim},count`);
+  lines.push(`mode_f1,${r.fLow},Hz`);
+  lines.push(`mode_f2,${r.fHigh},Hz`);
+  lines.push(`omega1,${r.omegaLow},rad/s`);
+  lines.push(`omega2,${r.omegaHigh},rad/s`);
+  lines.push(`omega1_squared,${r.omegaLow2},rad^2/s^2`);
+  lines.push(`omega2_squared,${r.omegaHigh2},rad^2/s^2`);
+  lines.push(`mass_m,${r.phys?.m ?? ''},kg`);
+  lines.push(`moment_I,${r.phys?.I ?? ''},kg*m^2`);
+  lines.push(`spring_mass_ms,${r.phys?.ms ?? ''},kg`);
+  lines.push(`spring_inertia_Is,${r.phys?.Is ?? ''},kg*m^2`);
+  lines.push(`effective_mass_mprime,${r.phys?.mEff ?? ''},kg`);
+  lines.push(`effective_inertia_Iprime,${r.phys?.IEff ?? ''},kg*m^2`);
+  lines.push(`inverse_effective_inertia,${r.phys?.invIEff ?? ''},1/(kg*m^2)`);
+  lines.push(`beat_period,${r.beatT},s`);
+  lines.push(`time_peak_period,${r.periodAcc.period},s`);
+  lines.push(`damping_tau,${r.damping.tau},s`);
+  lines.push(`period_cv,${r.periodAcc.cv},`);
+  lines.push(`zero_phase_corr,${r.zeroPhaseCorr},`);
+  lines.push(`best_lag,${r.lagInfo?.lag ?? ''},samples`);
+  lines.push(`best_lag_time,${(r.lagInfo?.lag ?? NaN)*r.dt},s`);
+  lines.push(`phase_deg,${r.phaseDeg},deg`);
+  lines.push(`envelope_corr,${r.envCorr},`);
+  lines.push(`coupling_score,${r.couplingScore},`);
+  lines.push(`decay_ratio,${r.decayRatio},`);
+  lines.push(`spike_ratio,${r.spikeRatio},`);
+  lines.push('');
+  lines.push('time_s,acc_corrected,gyro_corrected,angular_acceleration,acc_envelope,angular_acc_envelope');
+  for(let i=0;i<r.t.length;i++) lines.push([r.t[i],r.acc[i],r.gyro[i],r.angAcc[i],r.accEnv[i],r.angEnv[i]].join(','));
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'wilberforce_analysis_result.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function handleFiles(fileList){
+  const files = Array.from(fileList || []).filter(f => f && /\.(csv|txt|tsv|xlsx|xls)$/i.test(f.name));
+  if(!files.length) return;
+  try{
+    uploadedFileNames = files.map(f => f.name);
+    const hasExcel = files.some(f => /\.(xlsx|xls)$/i.test(f.name));
+    $('xlsxWarn').style.display = hasExcel ? 'block' : 'none';
+    $('fileInfo').textContent = `읽는 중: ${files.map(f=>f.name).join(', ')}`;
+    if(files.length === 1){
+      uploadSourceMode = 'single';
+      data = await parseFile(files[0]);
+      rawRows = data;
+      populateSelectors();
+      renderPreview();
+      updateRangeInfo();
+      $('fileInfo').innerHTML = `<b>${escapeHtml(files[0].name)}</b><br>단일 파일 모드 · ${data.length}개 데이터 행, ${headers.length}개 열을 읽었습니다.`;
+      analyzeBtn.disabled = false;
+      analyze();
+      return;
+    }
+
+    uploadSourceMode = 'split';
+    const parsedFiles = [];
+    for(const file of files){
+      const rows = await parseFile(file);
+      parsedFiles.push({name:file.name, headers:headers.slice(), rows:rows.map(r=>r.slice())});
+    }
+    const combined = combineSplitSensorFiles(parsedFiles);
+    headers = combined.headers;
+    data = combined.rows;
+    rawRows = data;
+    populateSelectors();
+    renderPreview();
+    updateRangeInfo();
+    $('fileInfo').innerHTML = `<b>2파일 자동 결합 모드</b><br>` +
+      `가속도 파일: ${escapeHtml(combined.accFileName)}<br>` +
+      `자이로스코프 파일: ${escapeHtml(combined.gyroFileName)}<br>` +
+      `시간축을 0초 기준으로 맞추고, 자이로스코프 값을 가속도 시간축에 선형 보간했습니다.<br>` +
+      `${data.length}개 결합 행, 가속도 열 ${combined.accCols}개, 각속도 열 ${combined.gyroCols}개를 읽었습니다.`;
+    analyzeBtn.disabled = false;
+    analyze();
+  }catch(err){
+    console.error(err);
+    $('fileInfo').innerHTML = `<span class="bad">파일을 읽지 못했습니다.</span><br>${escapeHtml(err.message)}`;
+    analyzeBtn.disabled = true;
+  }
+}
+
+async function handleFile(file){ return handleFiles([file]); }
+
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.add('drag');}));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.remove('drag');}));
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('drop', e => { const files = e.dataTransfer.files; if(files && files.length) handleFiles(files); });
+fileInput.addEventListener('change', e => { const files = e.target.files; if(files && files.length) handleFiles(files); });
+analyzeBtn.addEventListener('click', analyze);
+downloadBtn.addEventListener('click', downloadResultCSV);
+$('resetBtn').addEventListener('click', () => { location.reload(); });
+['timeCol','accCol','gyroCol','trimMode','cutStart','cutEnd','rangeStart','rangeEnd','fMin','fMax','smoothWin','maxFftN','massM','momentI','springMass','springI'].forEach(id => {
+  const el = $(id);
+  if(!el) return;
+  const handler = () => { updateRangeInfo(); if(data.length) analyze(); };
+  el.addEventListener('change', handler);
+  if(el.tagName === 'INPUT') el.addEventListener('input', () => updateRangeInfo());
+});
+
+document.querySelectorAll('.learnTabBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.getAttribute('data-learn-tab');
+    document.querySelectorAll('.learnTabBtn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.learnPanel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const panel = document.getElementById('learn-' + key);
+    if(panel) panel.classList.add('active');
+  });
+});
+
+window.addEventListener('resize', () => { if(lastResult) renderResults(); });
+</script>
+</body>
+</html>
